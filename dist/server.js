@@ -139,6 +139,8 @@ const ERRMSG_INVALID_ID = "\r\n\r\nInvalid ID\r\n\r\n";
 const ERRMSG_DUPLICATED_ID = "\r\n\r\nDuplicated ID\r\n\r\n";
 const REGEX_ROUTE_UPLOAD = new RegExp('^/d/([^/]+)(/[^/]*)?$');
 const config = {
+    listen_host: process.env['LISTEN_HOST'],
+    listen_port: process.env['LISTEN_PORT'],
     db_host: process.env['DB_HOST'],
     db_port: parseInt(process.env['DB_PORT']),
     storage_server: process.env['STORAGE_SERVER']
@@ -307,7 +309,7 @@ server.on('request', (req, res) => __awaiter(this, void 0, void 0, function* () 
         app(req, res);
     }
 }));
-server.listen(8080);
+server.listen(config.listen_port, config.listen_host);
 
 
 /***/ })

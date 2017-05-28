@@ -12,6 +12,8 @@ const ERRMSG_DUPLICATED_ID = "\r\n\r\nDuplicated ID\r\n\r\n"
 const REGEX_ROUTE_UPLOAD = new RegExp('^/d/([^/]+)(/[^/]*)?$')
 
 const config = {
+    listen_host: <string>process.env['LISTEN_HOST'],
+    listen_port: <number>process.env['LISTEN_PORT'],
     db_host: <string>process.env['DB_HOST'],
     db_port: parseInt(process.env['DB_PORT']),
     storage_server: <string>process.env['STORAGE_SERVER']
@@ -180,4 +182,4 @@ server.on('request', async (req: any, res: any) => {
         app(req, res)
     }
 })
-server.listen(8080)
+server.listen(config.listen_port, config.listen_host)
