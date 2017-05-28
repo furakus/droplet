@@ -153,7 +153,7 @@ function load_config() {
     let db_host = process.env['DB_HOST'];
     let db_port = parseInt(process.env['DB_PORT']);
     let storage_server = process.env['STORAGE_SERVER'];
-    let num_worker = process.env['STORAGE_SERVER'];
+    let num_worker = process.env['NUM_WORKER'];
     if (listen_host === undefined || listen_port === undefined ||
         db_host === undefined || db_port === undefined ||
         storage_server === undefined || num_worker === undefined) {
