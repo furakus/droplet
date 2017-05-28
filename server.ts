@@ -44,6 +44,13 @@ class Session {
         public flow_id: string,
         public flow_token: string) {}
 
+    async delete(): Promise<'OK' | 'EOTH'> {
+        if (await async_redis<number>(db.del.bind(db), this.id) !== 1) {
+            return 'EOTH'
+        }
+        return 'OK'
+    }
+
     static async new(id: string, size: number): Promise<Session | 'EDUP' | 'EOTH'> {
         try {
             let storage_server = config.storage_server
@@ -68,6 +75,22 @@ class Session {
             return new Session(id, size, storage_server, data.id, data.token)
         } catch(err) {
             return 'EOTH'
+        }
+    }
+
+    static async load(id: string): Promise<Session | null> {
+        try {
+            let data = await async_redis<any[]>(db.hmget.bind(db), id, ['size', 'storage_server', 'flow_id', 'flow_token'])
+            let size: number | null = data[0]
+            let storage_server: string | null = data[1]
+            let flow_id: string | null = data[2]
+            let flow_token: string | null = data[3]
+            if (size === null || storage_server === null || flow_id === null || flow_token === null) {
+                return null
+            }
+            return new Session(id, size, storage_server, flow_id, flow_token)
+        } catch(err) {
+            return null
         }
     }
 }
@@ -122,6 +145,28 @@ async function route_upload(req: http.IncomingMessage, res: http.ServerResponse)
     res.end()
     return true
 }
+
+app.get('/d/:id/:filename?', async (req, res) => {
+    let id: string = req.params['id']
+    let filename: string | undefined = req.params['filename']
+    if (validate_id(id) === false) {
+        res.status(404).send()
+        return
+    }
+    let session = await Session.load(id)
+    if (session === null) {
+        res.status(404).send()
+        return
+    }
+    if (await session.delete() !== 'OK') {
+        res.status(500).send()
+        return
+    }
+    if (filename === undefined) {
+        filename = id
+    }
+    res.redirect(`${session.storage_server}/${session.flow_id}/pull?filename=${filename}`)
+})
 
 let server = http.createServer()
 server.on('checkContinue', async (req: any, res: any) => {

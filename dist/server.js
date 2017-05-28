@@ -167,6 +167,14 @@ class Session {
         this.flow_id = flow_id;
         this.flow_token = flow_token;
     }
+    delete() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if ((yield async_redis(db.del.bind(db), this.id)) !== 1) {
+                return 'EOTH';
+            }
+            return 'OK';
+        });
+    }
     static new(id, size) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -193,6 +201,24 @@ class Session {
             }
             catch (err) {
                 return 'EOTH';
+            }
+        });
+    }
+    static load(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let data = yield async_redis(db.hmget.bind(db), id, ['size', 'storage_server', 'flow_id', 'flow_token']);
+                let size = data[0];
+                let storage_server = data[1];
+                let flow_id = data[2];
+                let flow_token = data[3];
+                if (size === null || storage_server === null || flow_id === null || flow_token === null) {
+                    return null;
+                }
+                return new Session(id, size, storage_server, flow_id, flow_token);
+            }
+            catch (err) {
+                return null;
             }
         });
     }
@@ -248,6 +274,27 @@ function route_upload(req, res) {
         return true;
     });
 }
+app.get('/d/:id/:filename?', (req, res) => __awaiter(this, void 0, void 0, function* () {
+    let id = req.params['id'];
+    let filename = req.params['filename'];
+    if (validate_id(id) === false) {
+        res.status(404).send();
+        return;
+    }
+    let session = yield Session.load(id);
+    if (session === null) {
+        res.status(404).send();
+        return;
+    }
+    if ((yield session.delete()) !== 'OK') {
+        res.status(500).send();
+        return;
+    }
+    if (filename === undefined) {
+        filename = id;
+    }
+    res.redirect(`${session.storage_server}/${session.flow_id}/pull?filename=${filename}`);
+}));
 let server = __WEBPACK_IMPORTED_MODULE_0_http__["createServer"]();
 server.on('checkContinue', (req, res) => __awaiter(this, void 0, void 0, function* () {
     if ((yield route_upload(req, res)) === false) {
