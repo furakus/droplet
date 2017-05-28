@@ -4,6 +4,7 @@ import * as express from 'express'
 import * as url from 'url'
 import * as redis from 'redis'
 import * as dotenv from 'dotenv'
+import * as useragent from 'express-useragent'
 import axios from 'axios'
 
 dotenv.config()
@@ -50,6 +51,7 @@ function load_config(): Config {
 const config = load_config()
 const db = redis.createClient(config.db_port, config.db_host)
 const app = express()
+app.use(useragent.express())
 
 async function async_redis<T>(method: (...args: any[]) => boolean, ...args: any[]): Promise<T> {
     return new Promise<T>((resolve, reject) => {
@@ -179,6 +181,13 @@ async function route_upload(req: http.IncomingMessage, res: http.ServerResponse)
 }
 
 app.get('/d/:id/:filename?', async (req, res) => {
+    let ua = req.useragent
+    if (ua !== undefined) {
+        if (ua.isBot) {
+            res.status(418).send()
+            return
+        }
+    }
     let id: string = req.params['id']
     let filename: string | undefined = req.params['filename']
     if (validate_id(id) === false) {
