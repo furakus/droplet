@@ -1,0 +1,267 @@
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// identity function for calling harmony imports with the correct context
+/******/ 	__webpack_require__.i = function(value) { return value; };
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports) {
+
+module.exports = require("axios");
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports) {
+
+module.exports = require("dotenv");
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require("express");
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("http");
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+module.exports = require("redis");
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+module.exports = require("url");
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_http__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_http___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_http__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_express__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_express__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_url__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_url___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_url__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_redis__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_redis___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_redis__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_axios__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_axios__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_dotenv__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_dotenv___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_dotenv__);
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+
+
+
+__WEBPACK_IMPORTED_MODULE_5_dotenv__["config"]();
+const ERRMSG_INVALID_ID = "\r\n\r\nInvalid ID\r\n\r\n";
+const ERRMSG_DUPLICATED_ID = "\r\n\r\nDuplicated ID\r\n\r\n";
+const REGEX_ROUTE_UPLOAD = new RegExp('^/d/([^/]+)(/[^/]*)?$');
+const config = {
+    db_host: process.env['DB_HOST'],
+    db_port: parseInt(process.env['DB_PORT']),
+    storage_server: process.env['STORAGE_SERVER']
+};
+const db = __WEBPACK_IMPORTED_MODULE_3_redis__["createClient"](config.db_port, config.db_host);
+const app = __WEBPACK_IMPORTED_MODULE_1_express__();
+function async_redis(method, ...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => {
+            method(...args, (err, result) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve(result);
+                }
+            });
+        });
+    });
+}
+class Session {
+    constructor(id, size, storage_server, flow_id, flow_token) {
+        this.id = id;
+        this.size = size;
+        this.storage_server = storage_server;
+        this.flow_id = flow_id;
+        this.flow_token = flow_token;
+    }
+    static new(id, size) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let storage_server = config.storage_server;
+                if ((yield async_redis(db.hsetnx.bind(db), id, 'storage_server', storage_server)) !== 1) {
+                    return 'EDUP';
+                }
+                let res = yield __WEBPACK_IMPORTED_MODULE_4_axios___default.a.post(`${storage_server}/new`, JSON.stringify({ size }));
+                if (res.status !== 200) {
+                    return 'EOTH';
+                }
+                let data = res.data;
+                if ((yield async_redis(db.hmset.bind(db), id, {
+                    size: size,
+                    flow_id: data.id,
+                    flow_token: data.token
+                })) !== 'OK') {
+                    return 'EOTH';
+                }
+                if ((yield async_redis(db.expire.bind(db), id, 300)) !== 1) {
+                    return 'EOTH';
+                }
+                return new Session(id, size, storage_server, data.id, data.token);
+            }
+            catch (err) {
+                return 'EOTH';
+            }
+        });
+    }
+}
+function validate_id(id) {
+    if (id.length < 4 || id.length > 64) {
+        return false;
+    }
+    return true;
+}
+function route_upload(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (req.method !== 'POST') {
+            return false;
+        }
+        if (req.url === undefined) {
+            return false;
+        }
+        let req_path = __WEBPACK_IMPORTED_MODULE_2_url__["parse"](req.url).pathname;
+        if (req_path === undefined) {
+            return false;
+        }
+        let matches = REGEX_ROUTE_UPLOAD.exec(req_path);
+        if (matches === null) {
+            return false;
+        }
+        // Routing matched
+        let size = parseInt(req.headers['content-length']);
+        if (size === 0) {
+            res.statusCode = 400;
+            res.end();
+            return true;
+        }
+        let id = matches[1];
+        if (validate_id(id) === false) {
+            res.statusCode = 400;
+            res.end(ERRMSG_INVALID_ID);
+            return true;
+        }
+        let session = yield Session.new(id, size);
+        if (session === 'EOTH') {
+            res.statusCode = 500;
+            res.end();
+            return true;
+        }
+        if (session === 'EDUP') {
+            res.statusCode = 400;
+            res.end(ERRMSG_DUPLICATED_ID);
+            return true;
+        }
+        res.writeHead(307, { location: `${session.storage_server}/${session.flow_id}/push?token=${session.flow_token}` });
+        res.end();
+        return true;
+    });
+}
+let server = __WEBPACK_IMPORTED_MODULE_0_http__["createServer"]();
+server.on('checkContinue', (req, res) => __awaiter(this, void 0, void 0, function* () {
+    if ((yield route_upload(req, res)) === false) {
+        res.writeContinue();
+        app(req, res);
+    }
+}));
+server.on('request', (req, res) => __awaiter(this, void 0, void 0, function* () {
+    if ((yield route_upload(req, res)) === false) {
+        app(req, res);
+    }
+}));
+server.listen(8080);
+
+
+/***/ })
+/******/ ]);
