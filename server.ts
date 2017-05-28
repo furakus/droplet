@@ -27,7 +27,7 @@ function load_config(): Config {
     let db_host = <string | undefined>process.env['DB_HOST']
     let db_port = parseInt(process.env['DB_PORT'])
     let storage_server = <string | undefined>process.env['STORAGE_SERVER']
-    let num_worker = <number | undefined>process.env['NUM_WORKER']
+    let num_worker = parseInt(process.env['NUM_WORKER'])
     if (
         listen_host === undefined || listen_port === undefined ||
         db_host === undefined || db_port === undefined ||
