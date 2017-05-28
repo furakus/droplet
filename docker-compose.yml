@@ -1,0 +1,13 @@
+version: '2'
+services:
+  redis:
+    image: redis:alpine
+
+  droplet:
+    build: .
+    ports:
+     - 8000:8000
+    volumes:
+     - .:/droplet
+    depends_on:
+     - redis
