@@ -1,9 +1,10 @@
+import * as cluster from 'cluster'
 import * as http from 'http'
 import * as express from 'express'
 import * as url from 'url'
 import * as redis from 'redis'
-import axios from 'axios'
 import * as dotenv from 'dotenv'
+import axios from 'axios'
 
 dotenv.config()
 
@@ -11,13 +12,42 @@ const ERRMSG_INVALID_ID = "\r\n\r\nInvalid ID\r\n\r\n"
 const ERRMSG_DUPLICATED_ID = "\r\n\r\nDuplicated ID\r\n\r\n"
 const REGEX_ROUTE_UPLOAD = new RegExp('^/d/([^/]+)(/[^/]*)?$')
 
-const config = {
-    listen_host: <string>process.env['LISTEN_HOST'],
-    listen_port: <number>process.env['LISTEN_PORT'],
-    db_host: <string>process.env['DB_HOST'],
-    db_port: parseInt(process.env['DB_PORT']),
-    storage_server: <string>process.env['STORAGE_SERVER']
+interface Config {
+    listen_host: string
+    listen_port: number
+    db_host: string
+    db_port: number
+    storage_server: string
+    num_worker: number
 }
+
+function load_config(): Config {
+    let listen_host = <string | undefined>process.env['LISTEN_HOST']
+    let listen_port = <number | undefined>process.env['LISTEN_PORT']
+    let db_host = <string | undefined>process.env['DB_HOST']
+    let db_port = parseInt(process.env['DB_PORT'])
+    let storage_server = <string | undefined>process.env['STORAGE_SERVER']
+    let num_worker = <number | undefined>process.env['STORAGE_SERVER']
+    if (
+        listen_host === undefined || listen_port === undefined ||
+        db_host === undefined || db_port === undefined ||
+        storage_server === undefined || num_worker === undefined
+    ) {
+        console.error('Invalid dotenv configuration.')
+        return process.exit(1)
+    } else {
+        return {
+            listen_host,
+            listen_port,
+            db_host,
+            db_port,
+            storage_server,
+            num_worker
+        }
+    }
+}
+
+const config = load_config()
 const db = redis.createClient(config.db_port, config.db_host)
 const app = express()
 
@@ -182,4 +212,11 @@ server.on('request', async (req: any, res: any) => {
         app(req, res)
     }
 })
-server.listen(config.listen_port, config.listen_host)
+if (cluster.isMaster) {
+    for (let i = 0; i < config.num_worker; i++) {
+        cluster.fork()
+    }
+    console.log(`Droplet listening on ${config.listen_host}:${config.listen_port}`)
+} else {
+    server.listen(config.listen_port, config.listen_host)
+}

@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -76,50 +76,58 @@ module.exports = require("axios");
 /* 1 */
 /***/ (function(module, exports) {
 
-module.exports = require("dotenv");
+module.exports = require("cluster");
 
 /***/ }),
 /* 2 */
 /***/ (function(module, exports) {
 
-module.exports = require("express");
+module.exports = require("dotenv");
 
 /***/ }),
 /* 3 */
 /***/ (function(module, exports) {
 
-module.exports = require("http");
+module.exports = require("express");
 
 /***/ }),
 /* 4 */
 /***/ (function(module, exports) {
 
-module.exports = require("redis");
+module.exports = require("http");
 
 /***/ }),
 /* 5 */
 /***/ (function(module, exports) {
 
-module.exports = require("url");
+module.exports = require("redis");
 
 /***/ }),
 /* 6 */
+/***/ (function(module, exports) {
+
+module.exports = require("url");
+
+/***/ }),
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_http__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_http___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_http__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_express__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_express__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_url__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_url___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_url__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_redis__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_redis___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_redis__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_axios__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_axios__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_dotenv__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_cluster__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_cluster___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_cluster__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_http__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_http___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_http__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_express__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_express__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_url__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_url___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_url__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_redis__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_redis___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_redis__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_dotenv__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_dotenv___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_dotenv__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_axios__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_axios__);
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -134,19 +142,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 
 
 
+
 __WEBPACK_IMPORTED_MODULE_5_dotenv__["config"]();
 const ERRMSG_INVALID_ID = "\r\n\r\nInvalid ID\r\n\r\n";
 const ERRMSG_DUPLICATED_ID = "\r\n\r\nDuplicated ID\r\n\r\n";
 const REGEX_ROUTE_UPLOAD = new RegExp('^/d/([^/]+)(/[^/]*)?$');
-const config = {
-    listen_host: process.env['LISTEN_HOST'],
-    listen_port: process.env['LISTEN_PORT'],
-    db_host: process.env['DB_HOST'],
-    db_port: parseInt(process.env['DB_PORT']),
-    storage_server: process.env['STORAGE_SERVER']
-};
-const db = __WEBPACK_IMPORTED_MODULE_3_redis__["createClient"](config.db_port, config.db_host);
-const app = __WEBPACK_IMPORTED_MODULE_1_express__();
+function load_config() {
+    let listen_host = process.env['LISTEN_HOST'];
+    let listen_port = process.env['LISTEN_PORT'];
+    let db_host = process.env['DB_HOST'];
+    let db_port = parseInt(process.env['DB_PORT']);
+    let storage_server = process.env['STORAGE_SERVER'];
+    let num_worker = process.env['STORAGE_SERVER'];
+    if (listen_host === undefined || listen_port === undefined ||
+        db_host === undefined || db_port === undefined ||
+        storage_server === undefined || num_worker === undefined) {
+        console.error('Invalid dotenv configuration.');
+        return process.exit(1);
+    }
+    else {
+        return {
+            listen_host,
+            listen_port,
+            db_host,
+            db_port,
+            storage_server,
+            num_worker
+        };
+    }
+}
+const config = load_config();
+const db = __WEBPACK_IMPORTED_MODULE_4_redis__["createClient"](config.db_port, config.db_host);
+const app = __WEBPACK_IMPORTED_MODULE_2_express__();
 function async_redis(method, ...args) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
@@ -184,7 +211,7 @@ class Session {
                 if ((yield async_redis(db.hsetnx.bind(db), id, 'storage_server', storage_server)) !== 1) {
                     return 'EDUP';
                 }
-                let res = yield __WEBPACK_IMPORTED_MODULE_4_axios___default.a.post(`${storage_server}/new`, JSON.stringify({ size }));
+                let res = yield __WEBPACK_IMPORTED_MODULE_6_axios___default.a.post(`${storage_server}/new`, JSON.stringify({ size }));
                 if (res.status !== 200) {
                     return 'EOTH';
                 }
@@ -239,7 +266,7 @@ function route_upload(req, res) {
         if (req.url === undefined) {
             return false;
         }
-        let req_path = __WEBPACK_IMPORTED_MODULE_2_url__["parse"](req.url).pathname;
+        let req_path = __WEBPACK_IMPORTED_MODULE_3_url__["parse"](req.url).pathname;
         if (req_path === undefined) {
             return false;
         }
@@ -297,7 +324,7 @@ app.get('/d/:id/:filename?', (req, res) => __awaiter(this, void 0, void 0, funct
     }
     res.redirect(`${session.storage_server}/${session.flow_id}/pull?filename=${filename}`);
 }));
-let server = __WEBPACK_IMPORTED_MODULE_0_http__["createServer"]();
+let server = __WEBPACK_IMPORTED_MODULE_1_http__["createServer"]();
 server.on('checkContinue', (req, res) => __awaiter(this, void 0, void 0, function* () {
     if ((yield route_upload(req, res)) === false) {
         res.writeContinue();
@@ -309,7 +336,15 @@ server.on('request', (req, res) => __awaiter(this, void 0, void 0, function* () 
         app(req, res);
     }
 }));
-server.listen(config.listen_port, config.listen_host);
+if (__WEBPACK_IMPORTED_MODULE_0_cluster__["isMaster"]) {
+    for (let i = 0; i < config.num_worker; i++) {
+        __WEBPACK_IMPORTED_MODULE_0_cluster__["fork"]();
+    }
+    console.log(`Droplet listening on ${config.listen_host}:${config.listen_port}`);
+}
+else {
+    server.listen(config.listen_port, config.listen_host);
+}
 
 
 /***/ })

@@ -2,6 +2,10 @@
   "name": "droplet",
   "version": "0.0.1",
   "description": "",
+  "scripts": {
+    "build": "webpack --progress --define process.env.NODE_ENV=\"production\"",
+    "start": "node ./dist/server.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/furakus/droplet.git"
