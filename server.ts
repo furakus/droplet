@@ -9,9 +9,10 @@ import axios from 'axios'
 
 dotenv.config()
 
-const ERRMSG_INVALID_ID = "\r\n\r\nInvalid ID\r\n\r\n"
-const ERRMSG_DUPLICATED_ID = "\r\n\r\nDuplicated ID\r\n\r\n"
+const ERRMSG_INVALID_ID = '\r\n\r\nInvalid ID\r\n\r\n'
+const ERRMSG_DUPLICATED_ID = '\r\n\r\nDuplicated ID\r\n\r\n'
 const REGEX_ROUTE_UPLOAD = new RegExp('^/d/([^/]+)(/[^/]*)?$')
+const REGEX_BOT_WHITELIST = new RegExp('^.*(curl|wget).*$');
 
 interface Config {
     listen_host: string
@@ -183,7 +184,7 @@ async function route_upload(req: http.IncomingMessage, res: http.ServerResponse)
 app.get('/d/:id/:filename?', async (req, res) => {
     let ua = req.useragent
     if (ua !== undefined) {
-        if (ua.isBot) {
+        if (ua.isBot && REGEX_BOT_WHITELIST.exec(ua.source.toLowerCase()) === null) {
             res.status(418).send()
             return
         }
