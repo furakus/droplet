@@ -12,7 +12,7 @@ dotenv.config()
 const ERRMSG_INVALID_ID = '\r\n\r\nInvalid ID\r\n\r\n'
 const ERRMSG_DUPLICATED_ID = '\r\n\r\nDuplicated ID\r\n\r\n'
 const REGEX_ROUTE_UPLOAD = new RegExp('^/d/([^/]+)(/[^/]*)?$')
-const REGEX_BOT_WHITELIST = new RegExp('^.*(curl|wget).*$');
+const REGEX_BOT_WHITELIST = new RegExp('^.*(curl|wget).*$')
 
 interface Config {
     listen_host: string
