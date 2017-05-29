@@ -20,6 +20,7 @@
     "@types/dotenv": "^4.0.0",
     "@types/express": "^4.0.35",
     "@types/express-useragent": "^0.2.20",
+    "@types/morgan": "^1.7.32",
     "@types/redis": "^0.12.36",
     "ts-loader": "^2.1.0",
     "typescript": "^2.3.3",
@@ -32,6 +33,7 @@
     "dotenv": "^4.0.0",
     "express": "^4.15.3",
     "express-useragent": "^1.0.7",
+    "morgan": "^1.8.2",
     "redis": "^2.7.1",
     "url": "^0.11.0"
   }

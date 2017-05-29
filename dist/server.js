@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 8);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -106,16 +106,22 @@ module.exports = require("http");
 /* 6 */
 /***/ (function(module, exports) {
 
-module.exports = require("redis");
+module.exports = require("morgan");
 
 /***/ }),
 /* 7 */
 /***/ (function(module, exports) {
 
-module.exports = require("url");
+module.exports = require("redis");
 
 /***/ }),
 /* 8 */
+/***/ (function(module, exports) {
+
+module.exports = require("url");
+
+/***/ }),
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -126,16 +132,18 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_http___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_http__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_express__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_express__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_url__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_url___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_url__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_redis__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_redis___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_redis__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_dotenv__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_dotenv___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_dotenv__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_express_useragent__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_express_useragent___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_express_useragent__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_axios__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_axios__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_morgan__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_morgan___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_morgan__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_url__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_url___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_url__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_redis__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_redis___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_redis__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_dotenv__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_dotenv___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_dotenv__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_express_useragent__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_express_useragent___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_express_useragent__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_axios__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_axios__);
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -152,10 +160,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 
 
 
-__WEBPACK_IMPORTED_MODULE_5_dotenv__["config"]();
-const ERRMSG_INVALID_ID = "\r\n\r\nInvalid ID\r\n\r\n";
-const ERRMSG_DUPLICATED_ID = "\r\n\r\nDuplicated ID\r\n\r\n";
+
+__WEBPACK_IMPORTED_MODULE_6_dotenv__["config"]();
+const ERRMSG_INVALID_ID = '\r\n\r\nInvalid ID\r\n\r\n';
+const ERRMSG_DUPLICATED_ID = '\r\n\r\nDuplicated ID\r\n\r\n';
 const REGEX_ROUTE_UPLOAD = new RegExp('^/d/([^/]+)(/[^/]*)?$');
+const REGEX_BOT_WHITELIST = new RegExp('^.*(curl|wget).*$');
 function load_config() {
     let listen_host = process.env['LISTEN_HOST'];
     let listen_port = process.env['LISTEN_PORT'];
@@ -181,9 +191,10 @@ function load_config() {
     }
 }
 const config = load_config();
-const db = __WEBPACK_IMPORTED_MODULE_4_redis__["createClient"](config.db_port, config.db_host);
+const db = __WEBPACK_IMPORTED_MODULE_5_redis__["createClient"](config.db_port, config.db_host);
 const app = __WEBPACK_IMPORTED_MODULE_2_express__();
-app.use(__WEBPACK_IMPORTED_MODULE_6_express_useragent__["express"]());
+app.use(__WEBPACK_IMPORTED_MODULE_3_morgan__('combined'));
+app.use(__WEBPACK_IMPORTED_MODULE_7_express_useragent__["express"]());
 function async_redis(method, ...args) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
@@ -221,7 +232,7 @@ class Session {
                 if ((yield async_redis(db.hsetnx.bind(db), id, 'storage_server', storage_server)) !== 1) {
                     return 'EDUP';
                 }
-                let res = yield __WEBPACK_IMPORTED_MODULE_7_axios___default.a.post(`${storage_server}/new`, JSON.stringify({ size }));
+                let res = yield __WEBPACK_IMPORTED_MODULE_8_axios___default.a.post(`${storage_server}/new`, JSON.stringify({ size }));
                 if (res.status !== 200) {
                     return 'EOTH';
                 }
@@ -276,7 +287,7 @@ function route_upload(req, res) {
         if (req.url === undefined) {
             return false;
         }
-        let req_path = __WEBPACK_IMPORTED_MODULE_3_url__["parse"](req.url).pathname;
+        let req_path = __WEBPACK_IMPORTED_MODULE_4_url__["parse"](req.url).pathname;
         if (req_path === undefined) {
             return false;
         }
@@ -316,7 +327,7 @@ function route_upload(req, res) {
 app.get('/d/:id/:filename?', (req, res) => __awaiter(this, void 0, void 0, function* () {
     let ua = req.useragent;
     if (ua !== undefined) {
-        if (ua.isBot) {
+        if (ua.isBot && REGEX_BOT_WHITELIST.exec(ua.source.toLowerCase()) === null) {
             res.status(418).send();
             return;
         }

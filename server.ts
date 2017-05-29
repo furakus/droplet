@@ -1,6 +1,7 @@
 import * as cluster from 'cluster'
 import * as http from 'http'
 import * as express from 'express'
+import * as morgan from 'morgan'
 import * as url from 'url'
 import * as redis from 'redis'
 import * as dotenv from 'dotenv'
@@ -52,6 +53,7 @@ function load_config(): Config {
 const config = load_config()
 const db = redis.createClient(config.db_port, config.db_host)
 const app = express()
+app.use(morgan('combined'))
 app.use(useragent.express())
 
 async function async_redis<T>(method: (...args: any[]) => boolean, ...args: any[]): Promise<T> {
