@@ -140,7 +140,7 @@ function validate_id(id: string): boolean {
 }
 
 async function route_upload(req: http.IncomingMessage, res: http.ServerResponse): Promise<boolean> {
-    if (req.method !== 'POST') {
+    if (req.method !== 'POST' && req.method !== 'PUT') {
         return false
     }
     if (req.url === undefined) {
@@ -178,7 +178,7 @@ async function route_upload(req: http.IncomingMessage, res: http.ServerResponse)
         res.end(ERRMSG_DUPLICATED_ID)
         return true
     }
-    res.writeHead(307, { location: `${session.storage_server}/${session.flow_id}/push?token=${session.flow_token}` })
+    res.writeHead(307, { location: `${session.storage_server}/flow/${session.flow_id}/push?token=${session.flow_token}` })
     res.end()
     return true
 }
@@ -209,7 +209,7 @@ app.get('/d/:id/:filename?', async (req, res) => {
     if (filename === undefined) {
         filename = id
     }
-    res.redirect(`${session.storage_server}/${session.flow_id}/pull?filename=${filename}`)
+    res.redirect(`${session.storage_server}/flow/${session.flow_id}/pull?filename=${filename}`)
 })
 
 let server = http.createServer()
