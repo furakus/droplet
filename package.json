@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "build": "webpack --progress --define process.env.NODE_ENV=\"production\"",
-    "start": "node ./dist/server.js"
+    "build": "webpack --config webpack.backend.config.js --progress --define process.env.NODE_ENV=\"production\"",
+    "dev": "webpack-dev-server --config webpack.frontend.config.js",
+    "start": "node ./server/bundle.js"
   },
   "repository": {
     "type": "git",
@@ -22,9 +23,22 @@
     "@types/express-useragent": "^0.2.20",
     "@types/morgan": "^1.7.32",
     "@types/redis": "^0.12.36",
+    "babel-core": "^6.25.0",
+    "babel-loader": "^7.0.0",
+    "babel-preset-env": "^1.5.2",
+    "css-loader": "^0.28.4",
+    "file-loader": "^0.11.2",
+    "less": "^2.7.2",
+    "less-loader": "^4.0.4",
+    "style-loader": "^0.18.2",
     "ts-loader": "^2.1.0",
     "typescript": "^2.3.3",
+    "vue": "^2.3.4",
+    "vue-loader": "^12.2.1",
+    "vue-property-decorator": "^5.1.0",
+    "vue-template-compiler": "^2.3.4",
     "webpack": "^2.6.1",
+    "webpack-dev-server": "^2.4.5",
     "webpack-node-externals": "^1.6.0"
   },
   "dependencies": {

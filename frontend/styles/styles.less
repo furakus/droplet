@@ -1,0 +1,53 @@
+@import "gridlex.less";
+@import "colors.less";
+
+* {
+    box-sizing: border-box;
+    position: relative;
+}
+
+*:focus {
+    outline: none;
+}
+
+.fixed-height(@size) {
+    height: @size;
+    line-height: @size;
+}
+
+.btn-proto(@color, @desat) {
+    .fixed-height(2rem);
+    padding: 0 1rem;
+    border: none;
+    background-color: lighten(desaturate(@color, @desat), 30%);
+    color: black;
+    font-family: "Source Code Pro", monospace;
+    &:hover {
+        background-color: @color;
+        &:after {
+            content: "";
+            height: 0.2rem;
+            width: 100%;
+            display: block;
+            background-color: desaturate(@color, @desat);
+            position: absolute;
+            left: 0;
+            bottom: -0.1rem;
+        }
+    }
+    &:active:after {
+        height: 0.1rem;
+    }
+}
+.btn-defl {
+    .btn-proto(#0096FF, 50%);
+}
+.btn-warn {
+    .btn-proto(#FFED00, 15%);
+}
+.btn-succ {
+    .btn-proto(#87F407, 20%);
+}
+.btn-harz {
+    .btn-proto(#FF7400, 30%);
+}
