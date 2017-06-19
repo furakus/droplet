@@ -15,13 +15,18 @@
     line-height: @size;
 }
 
+.mono-font(@size) {
+    font-family: "Source Code Pro", monospace;
+    font-size: @size;
+}
+
 .btn-proto(@color, @desat) {
     .fixed-height(2rem);
     padding: 0 1rem;
     border: none;
     background-color: lighten(desaturate(@color, @desat), 30%);
     color: black;
-    font-family: "Source Code Pro", monospace;
+    .mono-font(0.8rem);
     &:hover {
         background-color: @color;
         &:after {
@@ -50,4 +55,19 @@
 }
 .btn-harz {
     .btn-proto(#FF7400, 30%);
+}
+
+input[type="text"] {
+    .fixed-height(2rem);
+    width: 100%;
+    padding: 0 0.5rem;
+    border: solid 0.15rem #0096FF;
+    background-color: white;
+    display: block;
+    &:read-write:focus {
+        border-color: transparent;
+        color: white;
+        background-color: #4B4B4B;
+        transition: background-color 0.05s linear, border-color 0.05s linear;
+    }
 }

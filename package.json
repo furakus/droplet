@@ -23,6 +23,7 @@
     "@types/express-useragent": "^0.2.20",
     "@types/morgan": "^1.7.32",
     "@types/redis": "^0.12.36",
+    "axios": "^0.16.2",
     "babel-core": "^6.25.0",
     "babel-loader": "^7.0.0",
     "babel-preset-env": "^1.5.2",
@@ -42,7 +43,6 @@
     "webpack-node-externals": "^1.6.0"
   },
   "dependencies": {
-    "axios": "^0.16.1",
     "body-parser": "^1.17.2",
     "dotenv": "^4.0.0",
     "express": "^4.15.3",
