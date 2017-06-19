@@ -36,7 +36,7 @@ div.form-text {
     & > div > label {
         padding-left: 1rem;
         color: white;
-        .mono-font(0.8rem);
+        .mono-font(0.9rem);
     }
 }
 </style>

@@ -7,14 +7,17 @@
             <div class="grid"><div class="col">
                 <form-text :readonly="true" v-model="file_name">FILE</form-text>
             </div></div>
+            <div class="grid" v-if="link"><div class="col">
+                <form-text :readonly="true" v-model="link">LINK</form-text>
+            </div></div>
             <div class="grid" v-if="file === null"><div class="col">
                 <button class="btn-warn" @click="$refs.fileinput.click()">SELECT</button>
                 <span class="guide">or drag and drop a file to upload.</span>
             </div></div>
             <div class="grid" v-if="file"><div class="col">
                 <button class="btn-warn" @click="upload()">UPLOAD</button>
-                <button class="btn-harz" @click="cancel()">CANCEL</button>
-                <button class="btn-defl" @click="$refs.fileinput.click()">CHANGE</button>
+                <button class="btn-defl" @click="cancel()">CANCEL</button>
+                <button class="btn-harz" @click="$refs.fileinput.click()">CHANGE</button>
             </div></div>
         </div>
     </div>
@@ -25,11 +28,12 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Component,  } from 'vue-property-decorator'
-import Axios from 'axios'
+import axios from 'axios'
 
 @Component
 export default class App extends Vue {
     file: File | null = null
+    link: string | null = null
 
     get file_name() {
         if (this.file === null) {
@@ -46,10 +50,13 @@ export default class App extends Vue {
         this.file = files[0]
     }
 
-    upload() {
+    async upload() {
         if (this.file === null) {
             return
         }
+        let resp = await axios.post('/d/gid')
+        let id = resp.data.id
+        this.link = `${location.origin}/${id}/${this.file_name}`
     }
 
     cancel() {

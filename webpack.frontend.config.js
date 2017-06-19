@@ -57,7 +57,10 @@ module.exports = {
     contentBase: path.join(__dirname, 'public'),
     inline: true,
     hot: true,
-    historyApiFallback: true
+    historyApiFallback: true,
+    proxy: {
+      '/d': 'http://localhost:8000'
+    }
   },
   plugins: [new webpack.HotModuleReplacementPlugin()]
 };

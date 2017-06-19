@@ -7,13 +7,15 @@ import * as redis from 'redis'
 import * as dotenv from 'dotenv'
 import * as useragent from 'express-useragent'
 import axios from 'axios'
+import Hashids from 'hashids'
 
 dotenv.config()
 
 const ERRMSG_INVALID_ID = '\r\n\r\nInvalid ID\r\n\r\n'
 const ERRMSG_DUPLICATED_ID = '\r\n\r\nDuplicated ID\r\n\r\n'
-const REGEX_ROUTE_UPLOAD = new RegExp('^/d/([^/]+)(/[^/]*)?$')
-const REGEX_BOT_WHITELIST = new RegExp('^.*(curl|wget).*$')
+const REGEX_ROUTE_GENID = new RegExp('^/d/gid$')
+const REGEX_ROUTE_UPLOAD = new RegExp('^/d/(\w{4,})(/[^/]*)?$')
+const REGEX_BOT_WHITELIST = new RegExp('(curl|wget)')
 
 interface Config {
     listen_host: string
@@ -52,6 +54,7 @@ function load_config(): Config {
 
 const config = load_config()
 const db = redis.createClient(config.db_port, config.db_host)
+const hashids = new Hashids('', 4, 'abcdefghijklmnopqrstuvwxyz1234567890')
 const app = express()
 app.use(morgan('combined'))
 app.use(useragent.express())
@@ -82,7 +85,7 @@ class Session {
         public flow_token: string) {}
 
     async delete(): Promise<'OK' | 'EOTH'> {
-        if (await async_redis<number>(db.del.bind(db), this.id) !== 1) {
+        if (await async_redis<number>(db.del.bind(db), `SESSION@${this.id}`) !== 1) {
             return 'EOTH'
         }
         return 'OK'
@@ -91,7 +94,7 @@ class Session {
     static async new(id: string, size: number): Promise<Session | 'EDUP' | 'EOTH'> {
         try {
             let storage_server = config.storage_server
-            if (await async_redis<number>(db.hsetnx.bind(db), id, 'storage_server', storage_server) !== 1) {
+            if (await async_redis<number>(db.hsetnx.bind(db), `SESSION@${id}`, 'storage_server', storage_server) !== 1) {
                 return 'EDUP'
             }
             let res = await axios.post(`${storage_server}/new`, JSON.stringify({ size }))
@@ -99,14 +102,14 @@ class Session {
                 return 'EOTH'
             }
             let data: NewResponse = res.data
-            if (await async_redis<string>(db.hmset.bind(db), id, {
+            if (await async_redis<string>(db.hmset.bind(db), `SESSION@${id}`, {
                 size: size,
                 flow_id: data.id,
                 flow_token: data.token
             }) !== 'OK') {
                 return 'EOTH'
             }
-            if (await async_redis<number>(db.expire.bind(db), id, 300) !== 1) {
+            if (await async_redis<number>(db.expire.bind(db), `SESSION@${id}`, 300) !== 1) {
                 return 'EOTH'
             }
             return new Session(id, size, storage_server, data.id, data.token)
@@ -117,7 +120,7 @@ class Session {
 
     static async load(id: string): Promise<Session | null> {
         try {
-            let data = await async_redis<any[]>(db.hmget.bind(db), id, ['size', 'storage_server', 'flow_id', 'flow_token'])
+            let data = await async_redis<any[]>(db.hmget.bind(db), `SESSION@${id}`, ['size', 'storage_server', 'flow_id', 'flow_token'])
             let size: number | null = data[0]
             let storage_server: string | null = data[1]
             let flow_id: string | null = data[2]
@@ -182,6 +185,14 @@ async function route_upload(req: http.IncomingMessage, res: http.ServerResponse)
     res.end()
     return true
 }
+
+app.post(REGEX_ROUTE_GENID, async (req, res) => {
+    let counter = await async_redis<number>(db.incr.bind(db), 'GENID@COUNTER')
+    let id = hashids.encode(counter)
+    res.contentType('application/json')
+    res.write(JSON.stringify({ id }))
+    res.end()
+})
 
 app.get('/d/:id/:filename?', async (req, res) => {
     let ua = req.useragent
