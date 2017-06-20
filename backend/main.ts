@@ -9,9 +9,11 @@ import Dotenv from 'dotenv'
 import Useragent from 'express-useragent'
 import Axios from 'axios'
 import PathToRegexp from 'path-to-regexp'
+import { ErrorMessage } from '../interface'
 
 Dotenv.config()
 
+const ERRMSG_INVALID_PARAM = 'Invalid Parameter'
 const ERRMSG_INVALID_ID = 'Invalid ID'
 const ERRMSG_DUPLICATED_ID = 'Duplicated ID'
 const ID_FORMAT = '\\w{4,}'
@@ -75,7 +77,7 @@ async function async_redis<T>(method: (...args: any[]) => boolean, ...args: any[
 }
 
 interface UploadBody {
-    size: number
+    size?: number
 }
 
 interface NewResponse {
@@ -196,8 +198,12 @@ async function route_direct_upload(req: Http.IncomingMessage, res: Http.ServerRe
 app.post(REGEX_ROUTE_UPLOAD, async (req, res) => {
     let id: string = req.params['id']
     let upload_param: UploadBody = req.body
+    if (upload_param.size === undefined) {
+        res.status(400).json({ msg: ErrorMessage.INVALID_PARAM })
+        return
+    }
     if (validate_id(id) === false) {
-        res.status(400).json({ msg: ERRMSG_INVALID_ID })
+        res.status(400).json({ msg: ErrorMessage.INVALID_ID })
         return
     }
     let session = await Session.new(id, upload_param.size)
@@ -206,7 +212,7 @@ app.post(REGEX_ROUTE_UPLOAD, async (req, res) => {
         return
     }
     if (session === 'EDUP') {
-        res.status(400).json({ msg: ERRMSG_DUPLICATED_ID })
+        res.status(400).json({ msg: ErrorMessage.DUPLICATED_ID })
         return
     }
     res.json({

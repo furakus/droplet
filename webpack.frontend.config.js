@@ -59,7 +59,7 @@ module.exports = {
     hot: true,
     historyApiFallback: true,
     proxy: {
-      '/d': 'http://localhost:8000'
+      '/api': 'http://localhost:8000'
     }
   },
   plugins: [new webpack.HotModuleReplacementPlugin()]
