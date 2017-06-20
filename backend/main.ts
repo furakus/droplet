@@ -1,20 +1,23 @@
-import * as cluster from 'cluster'
-import * as http from 'http'
-import * as express from 'express'
-import * as morgan from 'morgan'
-import * as url from 'url'
-import * as redis from 'redis'
-import * as dotenv from 'dotenv'
-import * as useragent from 'express-useragent'
-import axios from 'axios'
-import Hashids from 'hashids'
+import Cluster from 'cluster'
+import Http from 'http'
+import Express from 'express'
+import Morgan from 'morgan'
+import BodyParser from 'body-parser'
+import Url from 'url'
+import Redis from 'redis'
+import Dotenv from 'dotenv'
+import Useragent from 'express-useragent'
+import Axios from 'axios'
+import PathToRegexp from 'path-to-regexp'
 
-dotenv.config()
+Dotenv.config()
 
-const ERRMSG_INVALID_ID = '\r\n\r\nInvalid ID\r\n\r\n'
-const ERRMSG_DUPLICATED_ID = '\r\n\r\nDuplicated ID\r\n\r\n'
-const REGEX_ROUTE_GENID = new RegExp('^/d/gid$')
-const REGEX_ROUTE_UPLOAD = new RegExp('^/d/(\w{4,})(/[^/]*)?$')
+const ERRMSG_INVALID_ID = 'Invalid ID'
+const ERRMSG_DUPLICATED_ID = 'Duplicated ID'
+const ID_FORMAT = '\\w{4,}'
+const REGEX_ROUTE_UPLOAD = `/api/id/:id(${ID_FORMAT})/upload`
+const REGEX_ROUTE_DIRECT_DOWNLOAD = `/:id(${ID_FORMAT})/:filename?`
+const REGEX_ROUTE_DIRECT_UPLOAD = PathToRegexp(`/:id(${ID_FORMAT})/:filename?`)
 const REGEX_BOT_WHITELIST = new RegExp('(curl|wget)')
 
 interface Config {
@@ -53,11 +56,11 @@ function load_config(): Config {
 }
 
 const config = load_config()
-const db = redis.createClient(config.db_port, config.db_host)
-const hashids = new Hashids('', 4, 'abcdefghijklmnopqrstuvwxyz1234567890')
-const app = express()
-app.use(morgan('combined'))
-app.use(useragent.express())
+const db = Redis.createClient(config.db_port, config.db_host)
+const app = Express()
+app.use(Morgan('combined'))
+app.use(BodyParser.json())
+app.use(Useragent.express())
 
 async function async_redis<T>(method: (...args: any[]) => boolean, ...args: any[]): Promise<T> {
     return new Promise<T>((resolve, reject) => {
@@ -69,6 +72,10 @@ async function async_redis<T>(method: (...args: any[]) => boolean, ...args: any[
             }
         })
     })
+}
+
+interface UploadBody {
+    size: number
 }
 
 interface NewResponse {
@@ -97,7 +104,7 @@ class Session {
             if (await async_redis<number>(db.hsetnx.bind(db), `SESSION@${id}`, 'storage_server', storage_server) !== 1) {
                 return 'EDUP'
             }
-            let res = await axios.post(`${storage_server}/new`, JSON.stringify({ size }))
+            let res = await Axios.post(`${storage_server}/new`, JSON.stringify({ size }))
             if (res.status !== 200) {
                 return 'EOTH'
             }
@@ -142,18 +149,18 @@ function validate_id(id: string): boolean {
     return true
 }
 
-async function route_upload(req: http.IncomingMessage, res: http.ServerResponse): Promise<boolean> {
+async function route_direct_upload(req: Http.IncomingMessage, res: Http.ServerResponse): Promise<boolean> {
     if (req.method !== 'POST' && req.method !== 'PUT') {
         return false
     }
     if (req.url === undefined) {
         return false
     }
-    let req_path = url.parse(req.url).pathname
+    let req_path = Url.parse(req.url).pathname
     if (req_path === undefined) {
         return false
     }
-    let matches = REGEX_ROUTE_UPLOAD.exec(req_path)
+    let matches = REGEX_ROUTE_DIRECT_UPLOAD.exec(req_path)
     if (matches === null) {
         return false
     }
@@ -186,15 +193,30 @@ async function route_upload(req: http.IncomingMessage, res: http.ServerResponse)
     return true
 }
 
-app.post(REGEX_ROUTE_GENID, async (req, res) => {
-    let counter = await async_redis<number>(db.incr.bind(db), 'GENID@COUNTER')
-    let id = hashids.encode(counter)
-    res.contentType('application/json')
-    res.write(JSON.stringify({ id }))
-    res.end()
+app.post(REGEX_ROUTE_UPLOAD, async (req, res) => {
+    let id: string = req.params['id']
+    let upload_param: UploadBody = req.body
+    if (validate_id(id) === false) {
+        res.status(400).json({ msg: ERRMSG_INVALID_ID })
+        return
+    }
+    let session = await Session.new(id, upload_param.size)
+    if (session === 'EOTH') {
+        res.status(500).send()
+        return
+    }
+    if (session === 'EDUP') {
+        res.status(400).json({ msg: ERRMSG_DUPLICATED_ID })
+        return
+    }
+    res.json({
+        storage_server: session.storage_server,
+        flow_id: session.flow_id,
+        flow_token: session.flow_token,
+    })
 })
 
-app.get('/d/:id/:filename?', async (req, res) => {
+app.get(REGEX_ROUTE_DIRECT_DOWNLOAD, async (req, res) => {
     let ua = req.useragent
     if (ua !== undefined) {
         if (ua.isBot && REGEX_BOT_WHITELIST.exec(ua.source.toLowerCase()) === null) {
@@ -223,21 +245,21 @@ app.get('/d/:id/:filename?', async (req, res) => {
     res.redirect(`${session.storage_server}/flow/${session.flow_id}/pull?filename=${filename}`)
 })
 
-let server = http.createServer()
+let server = Http.createServer()
 server.on('checkContinue', async (req: any, res: any) => {
-    if (await route_upload(req, res) === false) {
-        (<http.ServerResponse>res).writeContinue()
+    if (await route_direct_upload(req, res) === false) {
+        (<Http.ServerResponse>res).writeContinue()
         app(req, res)
     }
 })
 server.on('request', async (req: any, res: any) => {
-    if (await route_upload(req, res) === false) {
+    if (await route_direct_upload(req, res) === false) {
         app(req, res)
     }
 })
-if (cluster.isMaster) {
+if (Cluster.isMaster) {
     for (let i = 0; i < config.num_worker; i++) {
-        cluster.fork()
+        Cluster.fork()
     }
     console.log(`Droplet listening on ${config.listen_host}:${config.listen_port}`)
 } else {

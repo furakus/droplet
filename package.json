@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/furakus/droplet#readme",
   "devDependencies": {
+    "@types/body-parser": "^1.16.3",
     "@types/dotenv": "^4.0.0",
     "@types/express": "^4.0.35",
     "@types/express-useragent": "^0.2.20",
@@ -50,6 +51,7 @@
     "express-useragent": "^1.0.7",
     "hashids": "^1.1.1",
     "morgan": "^1.8.2",
+    "path-to-regexp": "^1.7.0",
     "redis": "^2.7.1",
     "url": "^0.11.0"
   }
