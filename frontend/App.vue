@@ -3,7 +3,7 @@
     <div id="header" class="grid grid-center"></div>
     <div id="container" class="grid grid-center">
         <div class="col-6">
-            <div class="grid"><div class="col">
+            <div class="grid" v-if="file"><div class="col">
                 <form-text :readonly="true" v-model="file_name">FILE</form-text>
             </div></div>
             <div class="grid" v-if="state > 0"><div class="col">
@@ -25,7 +25,9 @@
             </template>
             <div class="grid" v-if="state > 0"><div class="col">
                 <button class="btn-harz" v-if="state === 1" @click="reset()">CANCEL</button>
-                <button class="btn-succ" v-if="state === 2" @click="reset()">DONE</button>
+                <button class="btn-succ" v-if="state === 2" @click="reset()">CLEAR</button>
+                <span class="guide" v-if="state === 1">Transfering...</span>
+                <span class="guide" v-if="state === 2">Done.</span>
             </div></div>
         </div>
     </div>
@@ -179,7 +181,7 @@ body {
 
 #container {
     height: ~"calc(100% - 2rem)";
-    max-width: 768px;
+    max-width: 800px;
     margin: 0 auto;
     span.guide {
         margin-left: 0.5rem;

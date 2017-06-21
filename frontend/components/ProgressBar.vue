@@ -22,6 +22,7 @@ div.progress-bar {
     & > div.inner {
         .fixed-height(0.5rem);
         background-color: #4B4B4B;
+        transition: width 0.05s linear;
     }
 }
 </style>
