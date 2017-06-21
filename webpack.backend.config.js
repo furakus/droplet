@@ -1,5 +1,5 @@
 var path = require('path')
-var nodeExternals = require('webpack-node-externals');
+var nodeExternals = require('webpack-node-externals')
 
 module.exports = {
   entry: path.join(__dirname, 'backend', 'main.ts'),
@@ -21,4 +21,4 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js']
   }
-};
+}

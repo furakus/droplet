@@ -6,8 +6,9 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "module": "es6",
-    "target": "es6",
+    "target": "es5",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "lib": ["es5", "dom", "es2015.promise"]
   }
 }

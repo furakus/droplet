@@ -106,8 +106,9 @@ export default class App extends Vue {
         let hasher = new Hashids(navigator.userAgent, 4, 'abcdefghijklmnopqrstuvwxyz0123456789')
         let id: string
         let data: UploadResponse | null = null
+        let shortlen = 10000
         while (true) {
-            id = hasher.encode((new Date()).getTime())
+            id = hasher.encode(Math.floor((new Date()).getTime() / 100) % shortlen)
             let res = await Axios.post(`/api/id/${id}/upload`, { size: file.size })
             if (res.status === 200) {
                 data = res.data
@@ -118,6 +119,7 @@ export default class App extends Vue {
                     break
                 }
             }
+            shortlen *= 10
         }
         if (data !== null) {
             this.link = `${location.origin}/${id}/${this.file_name}`

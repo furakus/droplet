@@ -1,11 +1,12 @@
-var webpack = require('webpack')
-var path = require('path')
+var Webpack = require('webpack')
+var Path = require('path')
+var HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
-  entry: path.join(__dirname, 'frontend', 'main.ts'),
+  entry: Path.join(__dirname, 'frontend', 'main.ts'),
   output: {
-    filename: 'bundle.js',
-    path: path.join(__dirname, 'public')
+    filename: '[hash].bundle.js',
+    path: Path.join(__dirname, 'public')
   },
   module: {
     rules: [
@@ -18,20 +19,10 @@ module.exports = {
       },
       {
         test: /\.ts$/,
-        use: [
-          {
-            loader: 'babel-loader',
-            options: {
-              presets: ['env']
-            }
-          },
-          {
-            loader: 'ts-loader',
-            options: {
-              appendTsSuffixTo: [/\.vue$/]
-            }
-          }
-        ],
+        loader: 'ts-loader',
+        options: {
+          appendTsSuffixTo: [/\.vue$/]
+        },
         exclude: /node_modules/
       },
       {
@@ -54,7 +45,7 @@ module.exports = {
     extensions: ['.ts', '.js', '.vue', '.less']
   },
   devServer: {
-    contentBase: path.join(__dirname, 'public'),
+    contentBase: Path.join(__dirname, 'public'),
     inline: true,
     hot: true,
     historyApiFallback: true,
@@ -62,5 +53,10 @@ module.exports = {
       '/api': 'http://localhost:8000'
     }
   },
-  plugins: [new webpack.HotModuleReplacementPlugin()]
-};
+  plugins: [
+    new Webpack.HotModuleReplacementPlugin(),
+    new HtmlWebpackPlugin({
+      template: Path.join(__dirname, 'frontend', 'index.ejs')
+    })
+  ]
+}
