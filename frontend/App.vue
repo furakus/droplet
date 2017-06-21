@@ -135,6 +135,8 @@ export default class App extends Vue {
         this.file = null
         this.link = null
         this.progress = 0
+        let fileinput = <HTMLInputElement>this.$refs['fileinput']
+        fileinput.value = ''
         if (this.cancel_token !== null) {
             this.cancel_token.cancel()    
             this.cancel_token = null
