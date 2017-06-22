@@ -1,35 +1,62 @@
 <template>
 <div id="app" @dragover.prevent="onDragFile" @drop.prevent="onDropFile">
-    <div id="header" class="grid grid-center"></div>
-    <div id="container" class="grid grid-center">
-        <div class="col-6">
-            <div class="grid" v-if="file"><div class="col">
-                <form-text :readonly="true" v-model="file_name">FILE</form-text>
-            </div></div>
-            <div class="grid" v-if="state > 0"><div class="col">
-                <form-text :readonly="true" v-model="link">LINK</form-text>
-            </div></div>
-            <div class="grid" v-if="state > 0"><div class="col">
-                <progress-bar :progress="progress"></progress-bar>
-            </div></div>
-            <template v-if="state === 0">
-                <div class="grid" v-if="!file"><div class="col">
-                    <button class="btn-warn" @click="$refs.fileinput.click()">SELECT</button>
-                    <span class="guide">or drag and drop a file to upload.</span>
-                </div></div>
+    <div id="header">
+        <div class="grid"><div class="col">
+            <h1>Droplet</h1>
+        </div></div>
+    </div>
+    <div id="container">
+        <div class="grid grid-center">
+            <div class="col-8">
                 <div class="grid" v-if="file"><div class="col">
-                    <button class="btn-warn" @click="upload()">UPLOAD</button>
-                    <button class="btn-defl" @click="reset()">CANCEL</button>
-                    <button class="btn-harz" @click="$refs.fileinput.click()">CHANGE</button>
+                    <form-text :readonly="true" v-model="file_name">FILE</form-text>
                 </div></div>
-            </template>
-            <div class="grid" v-if="state > 0"><div class="col">
-                <button class="btn-harz" v-if="state === 1" @click="reset()">CANCEL</button>
-                <button class="btn-succ" v-if="state === 2" @click="reset()">CLEAR</button>
-                <span class="guide" v-if="state === 1">Transfering...</span>
-                <span class="guide" v-if="state === 2">Done.</span>
-            </div></div>
+                <div class="grid" v-if="state > 0"><div class="col">
+                    <form-text :readonly="true" v-model="link">LINK</form-text>
+                </div></div>
+                <div class="grid" v-if="state > 0"><div class="col">
+                    <progress-bar :progress="progress"></progress-bar>
+                </div></div>
+                <template v-if="state === 0">
+                    <div class="grid" v-if="!file"><div class="col">
+                        <button class="btn-warn" @click="$refs.fileinput.click()">SELECT</button>
+                        <span class="guide">or drag and drop a file to upload.</span>
+                    </div></div>
+                    <div class="grid" v-if="file"><div class="col">
+                        <button class="btn-warn" @click="upload()">UPLOAD</button>
+                        <button class="btn-defl" @click="reset()">CANCEL</button>
+                        <button class="btn-harz" @click="$refs.fileinput.click()">CHANGE</button>
+                    </div></div>
+                </template>
+                <div class="grid" v-if="state > 0"><div class="col">
+                    <button class="btn-harz" v-if="state === 1" @click="reset()">CANCEL</button>
+                    <button class="btn-succ" v-if="state === 2" @click="reset()">CLEAR</button>
+                    <span class="guide" v-if="state === 1">Transfering...</span>
+                    <span class="guide" v-if="state === 2">Done.</span>
+                </div></div>
+            </div>
         </div>
+        <div class="grid"><div class="col">
+            <p>
+                Droplet Service allow you to transfer files over network.
+            </p>
+            <p><small>
+                It works like a pipe and only buffers a small part of the file during transfer. The one-time link will be destroyed immediately when the transfer is done.
+            </small></p>
+            <p>
+                You can also upload files by cURL
+            </p>
+            <code>
+                curl -LT <strong>${your file path}</strong> https://d.ika.cx/<strong>${a unique id}</strong>/<strong>${file name}</strong><br><br>
+                * The length of <strong>${a unique id}</strong> must >= 4, contains only alphebats and numbers.
+            </code>
+        </div></div>
+        <div class="grid"><div class="col">
+            <p><small><ul>
+                <li>[1] <strong><a href="https://github.com/furakus/droplet">Droplet</a></strong>, Fast One-time File Exchange Service</li> 
+                <li>[2] <strong><a href="https://github.com/pzread/furakus/">Furakus</a></strong>, High Performance Http Flow Broker</li>
+            </ul></small></p>
+        </div></div>
     </div>
     <input ref="fileinput" type="file" hidden="true" @change="onSelectFile" />
 </div>
@@ -174,18 +201,27 @@ body {
 }
 
 #header {
-    height: 2rem;
-    max-width: 768px;
+    max-width: 640px;
     margin: 0 auto;
+    h1 {
+        .mono-font(2rem);
+    }
 }
 
 #container {
     height: ~"calc(100% - 2rem)";
-    max-width: 800px;
+    max-width: 640px;
     margin: 0 auto;
     span.guide {
         margin-left: 0.5rem;
         .mono-font(0.8rem);
+    }
+    small, code {
+        font-size: 0.8rem;
+    }
+    ul {
+        padding: 0;
+        list-style: none;
     }
 }
 </style>
