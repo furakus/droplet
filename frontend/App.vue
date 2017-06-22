@@ -38,7 +38,7 @@
         </div>
         <div class="grid"><div class="col">
             <p>
-                Droplet Service allow you to transfer files over network.
+                Droplet Service allows you to transfer files over network.
             </p>
             <p><small>
                 It works like a pipe and only buffers a small part of the file during transfer. The one-time link will be destroyed immediately when the transfer is done.
