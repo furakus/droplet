@@ -4,7 +4,7 @@
         <slot></slot>
     </label></div>
     <div class="col-9">
-        <input type="text" :readonly="readonly" :value="value" @input="updateValue($event.target.value)" />
+        <input type="text" :readonly="readonly" :value="value" @input="updateValue($event.target.value)"></input>
     </div>
 </div>
 </template>

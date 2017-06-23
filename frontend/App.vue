@@ -58,7 +58,7 @@
             </ul></small></p>
         </div></div>
     </div>
-    <input ref="fileinput" type="file" hidden="true" @change="onSelectFile" />
+    <input ref="fileinput" type="file" hidden="true" @change="onSelectFile"></input>
 </div>
 </template>
 
