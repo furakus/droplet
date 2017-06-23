@@ -8,8 +8,8 @@
     <div id="container">
         <div class="grid grid-center">
             <div class="col-8">
-                <div class="grid" v-if="file"><div class="col">
-                    <form-text :readonly="true" v-model="file_name">FILE</form-text>
+                <div class="grid" v-for="file in filelist"><div class="col">
+                    <form-text :readonly="true" v-model="file.name">FILE</form-text>
                 </div></div>
                 <div class="grid" v-if="state > 0"><div class="col">
                     <form-text :readonly="true" v-model="link">LINK</form-text>
@@ -18,11 +18,11 @@
                     <progress-bar :progress="progress"></progress-bar>
                 </div></div>
                 <template v-if="state === 0">
-                    <div class="grid" v-if="!file"><div class="col">
+                    <div class="grid" v-if="!filelist"><div class="col">
                         <button class="btn-warn" @click="$refs.fileinput.click()">SELECT</button>
                         <span class="guide">or drag and drop a file to upload.</span>
                     </div></div>
-                    <div class="grid" v-if="file"><div class="col">
+                    <div class="grid" v-if="filelist"><div class="col">
                         <button class="btn-warn" @click="upload()">UPLOAD</button>
                         <button class="btn-defl" @click="reset()">CANCEL</button>
                         <button class="btn-harz" @click="$refs.fileinput.click()">CHANGE</button>
@@ -58,7 +58,7 @@
             </ul></small></p>
         </div></div>
     </div>
-    <input ref="fileinput" type="file" hidden="true" @change="onSelectFile"></input>
+    <input ref="fileinput" type="file" hidden="true" multiple="true" @change="onSelectFile"></input>
 </div>
 </template>
 
@@ -68,6 +68,7 @@ import { Component,  } from 'vue-property-decorator'
 import Axios from 'axios'
 import { CancelTokenSource } from 'axios'
 import Hashids from 'hashids'
+import JSZip from 'jszip'
 import { ErrorMessage } from '../interface'
 
 interface UploadResponse {
@@ -89,18 +90,10 @@ enum State {
 @Component
 export default class App extends Vue {
     state: State = State.Pending
-    file: File | null = null
+    filelist: File[] | null = null
     link: string | null = null
     progress: number = 0
     cancel_token: CancelTokenSource | null = null
-
-    get file_name() {
-        if (this.file === null) {
-            return ''
-        } else {
-            return this.file.name
-        }
-    }
 
     onDragFile(evt: DragEvent) {
         if (this.state === State.Done) {
@@ -116,29 +109,43 @@ export default class App extends Vue {
     onDropFile(evt: DragEvent) {
         let files = evt.dataTransfer.files
         if (this.state === State.Pending && files.length > 0) {
-            this.file = files[0]
+            this.filelist = []
+            for (let i = 0; i < files.length; ++i) {
+                this.filelist.push(files[i])
+            }
         }
     }
 
     onSelectFile(evt: Event) {
         let files = (<HTMLInputElement>evt.target).files
         if (this.state === State.Pending && files !== null && files.length > 0) {  
-            this.file = files[0]
+            this.filelist = []
+            for (let i = 0; i < files.length; ++i) {
+                this.filelist.push(files[i])
+            }
         }
     }
 
     async upload() {
-        if (this.state !== State.Pending || this.file === null) {
+        if (this.state !== State.Pending || this.filelist === null || this.filelist.length === 0) {
             return
         }
-        let file = this.file
+        let blob: Blob
+        let name: string
+        if (this.filelist.length === 1) {
+            blob = this.filelist[0]
+            name = this.filelist[0].name
+        } else {
+            blob = await this.packFiles(this.filelist)
+            name = 'droplet.zip'
+        }
         let hasher = new Hashids(navigator.userAgent, 4, 'abcdefghijklmnopqrstuvwxyz0123456789')
         let id: string
         let data: UploadResponse | null = null
         let shortlen = 10000
         while (true) {
             id = hasher.encode(Math.floor((new Date()).getTime() / 100) % shortlen)
-            let res = await Axios.post(`/api/id/${id}/upload`, { size: file.size })
+            let res = await Axios.post(`/api/id/${id}/upload`, { size: blob.size })
             if (res.status === 200) {
                 data = res.data
                 break
@@ -151,9 +158,9 @@ export default class App extends Vue {
             shortlen *= 10
         }
         if (data !== null) {
-            this.link = `${location.origin}/${id}/${this.file_name}`
+            this.link = `${location.origin}/${id}/${name}`
             this.state = State.Uploading
-            await this.uploadBlob(file, data.storage_server, data.flow_id, data.flow_token)
+            await this.uploadBlob(blob, data.storage_server, data.flow_id, data.flow_token)
             this.state = State.Done
         } else {
             this.reset()
@@ -161,7 +168,7 @@ export default class App extends Vue {
     }
 
     reset() {
-        this.file = null
+        this.filelist = null
         this.link = null
         this.progress = 0
         let fileinput = <HTMLInputElement>this.$refs['fileinput']
@@ -171,6 +178,18 @@ export default class App extends Vue {
             this.cancel_token = null
         }
         this.state = State.Pending
+    }
+
+    async packFiles(files: File[]): Promise<Blob> {
+        let pack = JSZip()
+        for (let file of files) {
+            pack.file(file.name, file)
+        }
+        let blob: Blob = await pack.generateAsync({
+            compression: 'STORE',
+            type: 'blob',
+        })
+        return blob
     }
 
     async uploadBlob(blob: Blob, storage_server: string, flow_id: string, flow_token: string) {
