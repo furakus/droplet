@@ -1,13 +1,14 @@
-var path = require('path')
-var nodeExternals = require('webpack-node-externals')
+var Path = require('path')
+var NodeExternals = require('webpack-node-externals')
+var UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = {
-  entry: path.join(__dirname, 'backend', 'main.ts'),
+  entry: Path.join(__dirname, 'backend', 'main.ts'),
   target: 'node',
-  externals: [nodeExternals()],
+  externals: [NodeExternals()],
   output: {
     filename: 'bundle.js',
-    path: path.join(__dirname, 'server')
+    path: Path.join(__dirname, 'server')
   },
   module: {
     rules: [
@@ -20,5 +21,8 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.js']
-  }
+  },
+  plugins: [
+    new UglifyJSPlugin()
+  ]
 }

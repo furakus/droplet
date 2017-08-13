@@ -35,9 +35,9 @@ function load_config(): Config {
     let listen_host = <string | undefined>process.env['LISTEN_HOST']
     let listen_port = <number | undefined>process.env['LISTEN_PORT']
     let db_host = <string | undefined>process.env['DB_HOST']
-    let db_port = parseInt(process.env['DB_PORT'])
+    let db_port = <string | undefined>process.env['DB_PORT']
     let storage_server = <string | undefined>process.env['STORAGE_SERVER']
-    let num_worker = parseInt(process.env['NUM_WORKER'])
+    let num_worker = <string | undefined>process.env['NUM_WORKER']
     if (
         listen_host === undefined || listen_port === undefined ||
         db_host === undefined || db_port === undefined ||
@@ -50,9 +50,9 @@ function load_config(): Config {
             listen_host,
             listen_port,
             db_host,
-            db_port,
+            db_port: parseInt(db_port),
             storage_server,
-            num_worker
+            num_worker: parseInt(num_worker)
         }
     }
 }
@@ -167,7 +167,7 @@ async function route_direct_upload(req: Http.IncomingMessage, res: Http.ServerRe
         return false
     }
     // Routing matched
-    let size: number = parseInt(req.headers['content-length'])
+    let size: number = parseInt(<string>req.headers['content-length'])
     if (size === 0) {
         res.statusCode = 400
         res.end()

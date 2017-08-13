@@ -1,6 +1,7 @@
 var Webpack = require('webpack')
 var Path = require('path')
 var HtmlWebpackPlugin = require('html-webpack-plugin')
+var UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = {
   entry: Path.join(__dirname, 'frontend', 'main.ts'),
@@ -54,9 +55,10 @@ module.exports = {
     }
   },
   plugins: [
+    new UglifyJSPlugin(),
     new Webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
       template: Path.join(__dirname, 'frontend', 'index.ejs')
-    })
+    }),
   ]
 }
