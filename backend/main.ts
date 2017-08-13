@@ -106,7 +106,7 @@ class Session {
             if (await async_redis<number>(db.hsetnx.bind(db), `SESSION@${id}`, 'storage_server', storage_server) !== 1) {
                 return 'EDUP'
             }
-            let res = await Axios.post(`${storage_server}/new`, JSON.stringify({ size }))
+            let res = await Axios.post(`${storage_server}/new`, JSON.stringify({ size, preserve_mode: true }))
             if (res.status !== 200) {
                 return 'EOTH'
             }
