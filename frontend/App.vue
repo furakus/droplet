@@ -12,7 +12,7 @@
                     <form-text :readonly="true" v-model="file.name">FILE</form-text>
                 </div></div>
                 <div class="grid" v-if="state > 0"><div class="col">
-                    <form-text :readonly="true" v-model="link">LINK</form-text>
+                    <form-text :readonly="true" :copiable="true" v-model="link">LINK</form-text>
                 </div></div>
                 <div class="grid" v-if="state > 0"><div class="col">
                     <progress-bar :progress="progress"></progress-bar>
