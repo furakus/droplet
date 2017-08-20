@@ -16,12 +16,13 @@ export default class ProgressBar extends Vue {
 </script>
 
 <style lang="less">
+@import "../styles/colors.less";
 @import "../styles/styles.less";
 
 div.progress-bar {
     & > div.inner {
         .fixed-height(0.5rem);
-        background-color: #4B4B4B;
+        background-color: @gray;
         transition: width 0.05s linear;
     }
 }

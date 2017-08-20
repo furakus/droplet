@@ -45,29 +45,29 @@
     }
 }
 .btn-defl {
-    .btn-proto(#0096FF, 50%);
+    .btn-proto(@blue, 50%);
 }
 .btn-warn {
-    .btn-proto(#FFED00, 15%);
+    .btn-proto(@yellow, 15%);
 }
 .btn-succ {
-    .btn-proto(#87F407, 20%);
+    .btn-proto(@green, 20%);
 }
 .btn-harz {
-    .btn-proto(#FF7400, 30%);
+    .btn-proto(@orange, 30%);
 }
 
 input[type="text"] {
     .fixed-height(2rem);
     width: 100%;
     padding: 0 0.5rem;
-    border: solid 0.15rem #0096FF;
+    border: solid 0.15rem @blue;
     background-color: white;
     display: block;
     &:read-write:focus {
         border-color: transparent;
         color: white;
-        background-color: #4B4B4B;
+        background-color: @gray;
         transition: background-color 0.05s linear, border-color 0.05s linear;
     }
 }

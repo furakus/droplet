@@ -50,7 +50,7 @@ export default class FormText extends Vue {
 
 div.form-text {
     .fixed-height(2rem);
-    background-color: #0096FF;
+    background-color: @blue;
     & > div > label {
         padding-left: 1rem;
         color: white;
@@ -65,17 +65,17 @@ div.form-text {
         > i {
             .fixed-height(2rem);
             width: 2rem;
-            color: lighten(desaturate(#0096FF, 50%), 30%);;
+            color: lighten(desaturate(@blue, 30%), 50%);
             text-align: center;
         }
         > div.effect {
-            height: 3rem;
-            width: 3rem;
-            padding: 1.3rem;
+            height: 2.5rem;
+            width: 2.5rem;
+            padding: 0.95rem;
             box-sizing: border-box;
             position: absolute;
-            top: -0.5rem;
-            left: -0.5rem;
+            top: -0.25rem;
+            left: -0.25rem;
             &:before {
                 content: "";
                 height: 100%;
@@ -83,7 +83,7 @@ div.form-text {
                 display: block;
                 box-sizing: border-box;
                 border-radius: 100%;
-                border: solid 0.2rem transparent;
+                border: solid 0.3rem transparent;
             }
         }
         &.effect > div.effect {
@@ -92,7 +92,8 @@ div.form-text {
             &:before {
                 border-color: white;
                 border-width: 0;
-                transition: border-width 0.2s linear 0.2s;
+                opacity: 0;
+                transition: border-width 0.4s linear, opacity 0.2s linear 0.2s;
             }
         }
         &:hover > i {
