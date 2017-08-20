@@ -1,13 +1,13 @@
 <template>
 <div id="app" @dragover.prevent="onDragFile" @drop.prevent="onDropFile">
     <div id="header">
-        <div class="grid grid-center"><div class="col-12_lg-12_md-12_sm-10_xs-10">
+        <div class="grid grid-center"><div class="col">
             <h1>Droplet</h1>
         </div></div>
     </div>
     <div id="container">
         <div class="grid grid-center">
-            <div class="col-8_lg-8_md-8_sm-10_xs-10">
+            <div class="col-8_lg-8_md-8_sm-12_xs-12">
                 <div class="grid" v-for="file in filelist"><div class="col">
                     <form-text :readonly="true" v-model="file.name">FILE</form-text>
                 </div></div>
@@ -42,7 +42,7 @@
                 </div></div>
             </div>
         </div>
-        <div class="grid grid-center"><div class="col-12_lg-12_md-12_sm-10_xs-10">
+        <div class="grid grid-center"><div class="col">
             <p>
                 Droplet Service allows you to transfer files over network.
             </p>
@@ -57,7 +57,7 @@
                 * The length of <strong>${a unique id}</strong> must >= 4, contains only alphebats and numbers.
             </code>
         </div></div>
-        <div class="grid grid-center"><div class="col-12_lg-12_md-12_sm-10_xs-10">
+        <div class="grid grid-center"><div class="col">
             <p><small><ul>
                 <li>[1] <strong><a href="https://github.com/furakus/droplet">Droplet</a></strong>, Fast One-time File Exchange Service</li> 
                 <li>[2] <strong><a href="https://github.com/pzread/furakus/">Furakus</a></strong>, High Performance Http Flow Broker</li>
@@ -216,7 +216,7 @@ export default class App extends Vue {
 
 body {
     height: 100%;
-    margin: 0 0;
+    margin: 0 0.5rem;
     padding: 0 0;
 }
 
