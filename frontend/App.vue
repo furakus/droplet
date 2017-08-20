@@ -1,13 +1,13 @@
 <template>
 <div id="app" @dragover.prevent="onDragFile" @drop.prevent="onDropFile">
     <div id="header">
-        <div class="grid"><div class="col">
+        <div class="grid grid-center"><div class="col-12_lg-12_md-12_sm-10_xs-10">
             <h1>Droplet</h1>
         </div></div>
     </div>
     <div id="container">
         <div class="grid grid-center">
-            <div class="col-8">
+            <div class="col-8_lg-8_md-8_sm-10_xs-10">
                 <div class="grid" v-for="file in filelist"><div class="col">
                     <form-text :readonly="true" v-model="file.name">FILE</form-text>
                 </div></div>
@@ -18,10 +18,16 @@
                     <progress-bar :progress="progress"></progress-bar>
                 </div></div>
                 <template v-if="state === 0">
-                    <div class="grid" v-if="!filelist"><div class="col">
-                        <button class="btn-warn" @click="$refs.fileinput.click()">SELECT</button>
-                        <span class="guide">or drag and drop a file to upload.</span>
-                    </div></div>
+                    <div class="grid" v-if="!filelist">
+                        <div class="col-12_lg-12_md-12_sm-0_xs-0">
+                            <button class="btn-warn" @click="$refs.fileinput.click()">SELECT</button>
+                            <span class="guide">or drag and drop a file to upload.</span>
+                        </div>
+                        <div class="col-0_lg-0_md-0_sm-12_xs-12">
+                            <button class="btn-warn" @click="$refs.fileinput.click()">SELECT</button>
+                            <span class="guide">a file to upload.</span>
+                        </div>
+                    </div>
                     <div class="grid" v-if="filelist"><div class="col">
                         <button class="btn-warn" @click="upload()">UPLOAD</button>
                         <button class="btn-defl" @click="reset()">CANCEL</button>
@@ -36,7 +42,7 @@
                 </div></div>
             </div>
         </div>
-        <div class="grid"><div class="col">
+        <div class="grid grid-center"><div class="col-12_lg-12_md-12_sm-10_xs-10">
             <p>
                 Droplet Service allows you to transfer files over network.
             </p>
@@ -51,7 +57,7 @@
                 * The length of <strong>${a unique id}</strong> must >= 4, contains only alphebats and numbers.
             </code>
         </div></div>
-        <div class="grid"><div class="col">
+        <div class="grid grid-center"><div class="col-12_lg-12_md-12_sm-10_xs-10">
             <p><small><ul>
                 <li>[1] <strong><a href="https://github.com/furakus/droplet">Droplet</a></strong>, Fast One-time File Exchange Service</li> 
                 <li>[2] <strong><a href="https://github.com/pzread/furakus/">Furakus</a></strong>, High Performance Http Flow Broker</li>
