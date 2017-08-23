@@ -67,12 +67,11 @@ div.progress-bar {
         }
     }
     & > div.tag {
-        .fixed-height(100%);
+        .fixed-height(@bar-height);
         position: absolute;
         top: 0;
         right: 0.3rem;
         color: white;
-        font-family: "Orbitron", monospace;
         .mono-font(@bar-height * 0.9);
     }
     @keyframes wave {
