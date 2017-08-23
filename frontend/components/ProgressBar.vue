@@ -2,7 +2,6 @@
 <div class="progress-bar">
     <div class="background"></div>
     <div class="indicator" :style="{ width: `${progress * 100}%` }"></div>
-    <div class="tag">{{ Math.floor(progress * 100) }}</div>
 </div>
 </template>
 
@@ -65,14 +64,6 @@ div.progress-bar {
             opacity: 0.3;
             background-color: black;
         }
-    }
-    & > div.tag {
-        .fixed-height(@bar-height);
-        position: absolute;
-        top: 0;
-        right: 0.3rem;
-        color: white;
-        .mono-font(@bar-height * 0.9);
     }
     @keyframes wave {
         0% {left: 0%; right: 100%;}
