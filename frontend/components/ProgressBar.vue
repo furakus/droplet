@@ -38,7 +38,7 @@ div.progress-bar {
         position: absolute;
         top: 0;
         left: 0;
-        transition: width 0.05s linear;
+        transition: width 0.5s linear;
         animation: backlight 4s steps(1, end) infinite;
         &:before {
             content: "";
@@ -71,12 +71,12 @@ div.progress-bar {
         100% {left: 100%; right: 0%;}
     }
     @keyframes light {
-        0% {background-color: lighten(@blue, 25%);}
+        0% {background-color: lighten(@blue, 12%);}
         50% {background-color: @blue;}
     }
     @keyframes backlight {
-        0% {background-color: lighten(@blue, 15%);}
-        50% {background-color: lighten(@blue, 35%);}
+        0% {background-color: lighten(@blue, 6%);}
+        50% {background-color: lighten(@blue, 18%);}
     }
 }
 </style>
