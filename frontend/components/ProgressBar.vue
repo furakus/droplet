@@ -20,7 +20,7 @@ export default class ProgressBar extends Vue {
 @import "../styles/colors.less";
 @import "../styles/styles.less";
 
-@bar-height: 0.8rem;
+@bar-height: 0.5rem;
 
 div.progress-bar {
     height: @bar-height;
