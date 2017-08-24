@@ -3,11 +3,20 @@ services:
   redis:
     image: redis:alpine
 
-  droplet:
+  backend:
     build: .
-    ports:
-     - 8000:8000
     volumes:
      - .:/droplet
     depends_on:
      - redis
+
+  proxy:
+    image: haproxy:alpine
+    ports:
+     - 80:80
+     - 443:443
+    volumes:
+     - ./haproxy:/haproxy
+    depends_on:
+     - backend
+    command: ["haproxy", "-f", "/haproxy/haproxy.cfg"]
