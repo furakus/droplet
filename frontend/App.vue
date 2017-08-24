@@ -14,7 +14,7 @@
                 <div class="grid" v-if="state > 0"><div class="col">
                     <form-text :readonly="true" :copiable="true" v-model="link">LINK</form-text>
                 </div></div>
-                <div class="grid" v-if="state > 0"><div class="col">
+                <div class="grid" v-if="state == 1"><div class="col">
                     <progress-bar :progress="progress"></progress-bar>
                 </div></div>
                 <template v-if="state === 0">
