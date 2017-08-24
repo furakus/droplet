@@ -1,7 +1,7 @@
 <template>
 <div class="progress-bar">
     <div class="background"></div>
-    <div class="indicator" :style="{ width: `${progress * 100}%` }"></div>
+    <div class="indicator" :style="{ width: `${Math.floor(progress * 100)}%` }"></div>
 </div>
 </template>
 
