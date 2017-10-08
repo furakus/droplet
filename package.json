@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/furakus/droplet#readme",
   "devDependencies": {
+    "@types/bluebird": "^3.5.14",
     "@types/body-parser": "^1.16.3",
     "@types/dotenv": "^4.0.0",
     "@types/express": "^4.0.36",
@@ -27,6 +28,7 @@
     "@types/morgan": "^1.7.32",
     "@types/redis": "^2.6.0",
     "axios": "^0.16.2",
+    "bluebird": "^3.5.1",
     "css-loader": "^0.28.4",
     "file-loader": "^1.1.5",
     "hashids": "^1.1.1",

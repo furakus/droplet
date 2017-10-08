@@ -9,13 +9,11 @@ import Dotenv from 'dotenv'
 import Useragent from 'express-useragent'
 import Axios from 'axios'
 import PathToRegexp from 'path-to-regexp'
+import BlueBird from 'bluebird'
 import { ErrorMessage } from '../interface'
 
 Dotenv.config()
 
-const ERRMSG_INVALID_PARAM = 'Invalid Parameter'
-const ERRMSG_INVALID_ID = 'Invalid ID'
-const ERRMSG_DUPLICATED_ID = 'Duplicated ID'
 const ID_FORMAT = '\\w{4,}'
 const REGEX_ROUTE_UPLOAD = `/api/id/:id(${ID_FORMAT})/upload`
 const REGEX_ROUTE_DIRECT_DOWNLOAD = `/:id(${ID_FORMAT})/:filename?`
@@ -57,24 +55,20 @@ function load_config(): Config {
     }
 }
 
+interface AsyncRedisClient extends Redis.RedisClient {
+    delAsync(...args: any[]): Promise<number>
+    hsetnxAsync(...args: any[]): Promise<number>
+    hmsetAsync(...args: any[]): Promise<string>
+    hmgetAsync(...args: any[]): Promise<any[]>
+    expireAsync(...args: any[]): Promise<number>
+}
+
 const config = load_config()
-const db = Redis.createClient(config.db_port, config.db_host)
+const db = BlueBird.promisifyAll(Redis.createClient(config.db_port, config.db_host)) as AsyncRedisClient
 const app = Express()
 app.use(Morgan('combined'))
 app.use(BodyParser.json())
 app.use(Useragent.express())
-
-async function async_redis<T>(method: (...args: any[]) => boolean, ...args: any[]): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-        method(...args, (err: Error, result: T) => {
-            if (err !== null) {
-                reject(err)
-            } else {
-                resolve(result)
-            }
-        })
-    })
-}
 
 interface UploadBody {
     size?: number
@@ -94,7 +88,7 @@ class Session {
         public flow_token: string) {}
 
     async delete(): Promise<'OK' | 'EOTH'> {
-        if (await async_redis<number>(db.del.bind(db), `SESSION@${this.id}`) !== 1) {
+        if (await db.delAsync(`SESSION@${this.id}`) !== 1) {
             return 'EOTH'
         }
         return 'OK'
@@ -103,7 +97,7 @@ class Session {
     static async new(id: string, size: number): Promise<Session | 'EDUP' | 'EOTH'> {
         try {
             let storage_server = config.storage_server
-            if (await async_redis<number>(db.hsetnx.bind(db), `SESSION@${id}`, 'storage_server', storage_server) !== 1) {
+            if (await db.hsetnxAsync(`SESSION@${id}`, 'storage_server', storage_server) !== 1) {
                 return 'EDUP'
             }
             let res = await Axios.post(`${storage_server}/new`, JSON.stringify({ size, preserve_mode: true }))
@@ -111,14 +105,14 @@ class Session {
                 return 'EOTH'
             }
             let data: NewResponse = res.data
-            if (await async_redis<string>(db.hmset.bind(db), `SESSION@${id}`, {
+            if (await db.hmsetAsync(`SESSION@${id}`, {
                 size: size,
                 flow_id: data.id,
                 flow_token: data.token
             }) !== 'OK') {
                 return 'EOTH'
             }
-            if (await async_redis<number>(db.expire.bind(db), `SESSION@${id}`, 300) !== 1) {
+            if (await db.expireAsync(`SESSION@${id}`, 300) !== 1) {
                 return 'EOTH'
             }
             return new Session(id, size, storage_server, data.id, data.token)
@@ -129,7 +123,7 @@ class Session {
 
     static async load(id: string): Promise<Session | null> {
         try {
-            let data = await async_redis<any[]>(db.hmget.bind(db), `SESSION@${id}`, ['size', 'storage_server', 'flow_id', 'flow_token'])
+            let data = await db.hmgetAsync(`SESSION@${id}`, ['size', 'storage_server', 'flow_id', 'flow_token'])
             let size: number | null = data[0]
             let storage_server: string | null = data[1]
             let flow_id: string | null = data[2]
@@ -151,11 +145,24 @@ function validate_id(id: string): boolean {
     return true
 }
 
-async function route_direct_upload(req: Http.IncomingMessage, res: Http.ServerResponse): Promise<boolean> {
-    if (req.method !== 'POST' && req.method !== 'PUT') {
-        return false
+async function create_session(id: string, size: number): Promise<Session | [number, ErrorMessage]> {
+    if (validate_id(id) === false) {
+        return [400, ErrorMessage.INVALID_ID]
     }
-    if (req.url === undefined) {
+    if (size <= 0) {
+        return [400, ErrorMessage.INVALID_PARAM]
+    }
+    let session = await Session.new(id, size)
+    if (session === 'EOTH') {
+        return [500, ErrorMessage.INTERNAL]
+    } else if (session === 'EDUP') {
+        return [400, ErrorMessage.DUPLICATED_ID]
+    }
+    return session
+}
+
+async function route_direct_upload(req: Http.IncomingMessage, res: Http.ServerResponse): Promise<boolean> {
+    if ((req.method !== 'POST' && req.method !== 'PUT') || req.url === undefined) {
         return false
     }
     let req_path = Url.parse(req.url).pathname
@@ -167,27 +174,17 @@ async function route_direct_upload(req: Http.IncomingMessage, res: Http.ServerRe
         return false
     }
     // Routing matched
-    let size: number = parseInt(<string>req.headers['content-length'])
-    if (size === 0) {
+    let content_length = req.headers['content-length']
+    if (typeof content_length !== 'string') {
         res.statusCode = 400
-        res.end()
-        return true
+        res.end(ErrorMessage.INVALID_PARAM)
+        return true;
     }
-    let id = matches[1]
-    if (validate_id(id) === false) {
-        res.statusCode = 400
-        res.end(ERRMSG_INVALID_ID)
-        return true
-    }
-    let session = await Session.new(id, size)
-    if (session === 'EOTH') {
-        res.statusCode = 500
-        res.end()
-        return true
-    }
-    if (session === 'EDUP') {
-        res.statusCode = 400
-        res.end(ERRMSG_DUPLICATED_ID)
+    let session = await create_session(matches[1], parseInt(content_length))
+    if (!(session instanceof Session)) {
+        let [code, message] = session
+        res.statusCode = code
+        res.end(message)
         return true
     }
     res.writeHead(307, { location: `${session.storage_server}/flow/${session.flow_id}/push?token=${session.flow_token}` })
@@ -202,17 +199,10 @@ app.post(REGEX_ROUTE_UPLOAD, async (req: any, res: any) => {
         res.status(400).json({ msg: ErrorMessage.INVALID_PARAM })
         return
     }
-    if (validate_id(id) === false) {
-        res.status(400).json({ msg: ErrorMessage.INVALID_ID })
-        return
-    }
-    let session = await Session.new(id, upload_param.size)
-    if (session === 'EOTH') {
-        res.status(500).send()
-        return
-    }
-    if (session === 'EDUP') {
-        res.status(400).json({ msg: ErrorMessage.DUPLICATED_ID })
+    let session = await create_session(id, upload_param.size)
+    if (!(session instanceof Session)) {
+        let [code, message] = session
+        res.status(code).json({ msg: message })
         return
     }
     res.json({

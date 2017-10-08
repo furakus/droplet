@@ -1,5 +1,6 @@
 export enum ErrorMessage { 
-    INVALID_PARAM,
-    INVALID_ID,
-    DUPLICATED_ID,
+    INVALID_PARAM = 'Invalid Parameter',
+    INVALID_ID = 'Invalid ID',
+    DUPLICATED_ID = 'Duplicated ID',
+    INTERNAL = 'Internal Error'
 }
