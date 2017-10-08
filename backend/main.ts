@@ -195,7 +195,7 @@ async function route_direct_upload(req: Http.IncomingMessage, res: Http.ServerRe
     return true
 }
 
-app.post(REGEX_ROUTE_UPLOAD, async (req, res) => {
+app.post(REGEX_ROUTE_UPLOAD, async (req: any, res: any) => {
     let id: string = req.params['id']
     let upload_param: UploadBody = req.body
     if (upload_param.size === undefined) {
@@ -222,7 +222,7 @@ app.post(REGEX_ROUTE_UPLOAD, async (req, res) => {
     })
 })
 
-app.get(REGEX_ROUTE_DIRECT_DOWNLOAD, async (req, res) => {
+app.get(REGEX_ROUTE_DIRECT_DOWNLOAD, async (req:any , res: any) => {
     let ua = req.useragent
     if (ua !== undefined) {
         if (ua.isBot && REGEX_BOT_WHITELIST.exec(ua.source.toLowerCase()) === null) {

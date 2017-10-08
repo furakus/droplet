@@ -70,7 +70,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Component,  } from 'vue-property-decorator'
+import { Component } from 'vue-property-decorator'
 import Axios from 'axios'
 import { CancelTokenSource } from 'axios'
 import Hashids from 'hashids'
@@ -191,7 +191,7 @@ export default class App extends Vue {
         for (let file of files) {
             pack.file(file.name, file)
         }
-        let blob: Blob = await pack.generateAsync({
+        let blob: Blob = <Blob>await pack.generateAsync({
             compression: 'STORE',
             type: 'blob',
         })
