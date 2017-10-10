@@ -56,10 +56,9 @@ function load_config(): Config {
 }
 
 interface AsyncRedisClient extends Redis.RedisClient {
-    delAsync(...args: any[]): Promise<number>
     hsetnxAsync(...args: any[]): Promise<number>
+    hincrbyAsync(...args: any[]): Promise<number>
     hmsetAsync(...args: any[]): Promise<string>
-    hmgetAsync(...args: any[]): Promise<any[]>
     expireAsync(...args: any[]): Promise<number>
 }
 
@@ -86,13 +85,6 @@ class Session {
         public storage_server: string,
         public flow_id: string,
         public flow_token: string) {}
-
-    async delete(): Promise<'OK' | 'EOTH'> {
-        if (await db.delAsync(`SESSION@${this.id}`) !== 1) {
-            return 'EOTH'
-        }
-        return 'OK'
-    }
 
     static async new(id: string, size: number): Promise<Session | 'EDUP' | 'EOTH'> {
         try {
@@ -121,9 +113,9 @@ class Session {
         }
     }
 
-    static async load(id: string): Promise<Session | null> {
+    static async get(id: string): Promise<Session | null> {
         try {
-            let data = await db.hmgetAsync(`SESSION@${id}`, ['size', 'storage_server', 'flow_id', 'flow_token'])
+            let data: any[] = await (<any>db.multi().hmget(`SESSION@${id}`, ['size', 'storage_server', 'flow_id', 'flow_token']).del(`SESSION@${id}`)).execAsync()
             let size: number | null = data[0]
             let storage_server: string | null = data[1]
             let flow_id: string | null = data[2]
@@ -226,13 +218,9 @@ app.get(REGEX_ROUTE_DIRECT_DOWNLOAD, async (req:any , res: any) => {
         res.status(404).send()
         return
     }
-    let session = await Session.load(id)
+    let session = await Session.get(id)
     if (session === null) {
         res.status(404).send()
-        return
-    }
-    if (await session.delete() !== 'OK') {
-        res.status(500).send()
         return
     }
     if (filename === undefined) {
