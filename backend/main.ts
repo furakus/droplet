@@ -16,6 +16,7 @@ Dotenv.config()
 
 const ID_FORMAT = '\\w{4,}'
 const REGEX_ROUTE_UPLOAD = `/api/id/:id(${ID_FORMAT})/upload`
+const REGEX_ROUTE_POLLEVENT = `/api/id/:id(${ID_FORMAT})/poll`
 const REGEX_ROUTE_DIRECT_DOWNLOAD = `/:id(${ID_FORMAT})/:filename?`
 const REGEX_ROUTE_DIRECT_UPLOAD = PathToRegexp(`/:id(${ID_FORMAT})/:filename?`)
 const REGEX_BOT_WHITELIST = new RegExp('(curl|wget)')
@@ -57,9 +58,14 @@ function load_config(): Config {
 
 interface AsyncRedisClient extends Redis.RedisClient {
     hsetnxAsync(...args: any[]): Promise<number>
-    hincrbyAsync(...args: any[]): Promise<number>
+    hgetAsync(...args: any[]): Promise<string>
     hmsetAsync(...args: any[]): Promise<string>
+    hmgetAsync(...args: any[]): Promise<any[]>
     expireAsync(...args: any[]): Promise<number>
+    renameAsync(...args: any[]): Promise<"OK">
+    delAsync(...args: any[]): Promise<number>
+    publishAsync(...args: any[]): Promise<number>
+    subscribeAsync(...args: any[]): Promise<string>
 }
 
 const config = load_config()
@@ -71,6 +77,10 @@ app.use(Useragent.express())
 
 interface UploadBody {
     size?: number
+}
+
+interface PollBody {
+    token: string
 }
 
 interface NewResponse {
@@ -108,14 +118,16 @@ class Session {
                 return 'EOTH'
             }
             return new Session(id, size, storage_server, data.id, data.token)
-        } catch(err) {
+        } catch {
             return 'EOTH'
         }
     }
 
     static async get(id: string): Promise<Session | null> {
         try {
-            let data: any[] = await (<any>db.multi().hmget(`SESSION@${id}`, ['size', 'storage_server', 'flow_id', 'flow_token']).del(`SESSION@${id}`)).execAsync()
+            await db.renameAsync(`SESSION@${id}`, `SESSION_SZIED@${id}`)
+            let data = await db.hmgetAsync(`SESSION_SZIED@${id}`, ['size', 'storage_server', 'flow_id', 'flow_token'])
+            await db.delAsync(`SESSION_SZIED@${id}`)
             let size: number | null = data[0]
             let storage_server: string | null = data[1]
             let flow_id: string | null = data[2]
@@ -124,7 +136,7 @@ class Session {
                 return null
             }
             return new Session(id, size, storage_server, flow_id, flow_token)
-        } catch(err) {
+        } catch {
             return null
         }
     }
@@ -204,7 +216,39 @@ app.post(REGEX_ROUTE_UPLOAD, async (req: any, res: any) => {
     })
 })
 
-app.get(REGEX_ROUTE_DIRECT_DOWNLOAD, async (req:any , res: any) => {
+app.post(REGEX_ROUTE_POLLEVENT, async (req: any, res: any) => {
+    let id: string = req.params['id']
+    let poll_param: PollBody = req.body
+    if (validate_id(id) === false) {
+        res.status(404).send()
+        return
+    }
+    let sub_db = BlueBird.promisifyAll(Redis.createClient(config.db_port, config.db_host)) as AsyncRedisClient
+    try {
+        let get_promise = new Promise<string>((resolve, reject) => {
+            sub_db.on(`message`, (channel: string, msg: string) => {
+                if (msg === 'GET') {
+                    resolve()
+                }
+            })
+        })
+        await sub_db.subscribeAsync(`NOTIFY@${id}/${poll_param.token}`)
+        let flow_token = await db.hgetAsync(`SESSION@${id}`, 'flow_token')
+        if (flow_token !== poll_param.token) {
+            res.status(404).send()
+            return
+        }
+        await get_promise
+        res.json([{ event: 'GET' }])
+    } catch {
+        res.status(404).send()
+        return
+    } finally {
+        sub_db.quit()
+    }
+})
+
+app.get(REGEX_ROUTE_DIRECT_DOWNLOAD, async (req:any, res: any) => {
     let ua = req.useragent
     if (ua !== undefined) {
         if (ua.isBot && REGEX_BOT_WHITELIST.exec(ua.source.toLowerCase()) === null) {
@@ -223,6 +267,7 @@ app.get(REGEX_ROUTE_DIRECT_DOWNLOAD, async (req:any , res: any) => {
         res.status(404).send()
         return
     }
+    await db.publishAsync(`NOTIFY@${session.id}/${session.flow_token}`, `GET`)
     if (filename === undefined) {
         filename = id
     }
