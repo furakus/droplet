@@ -1,5 +1,4 @@
-server
-public
+website/dist
 
 # Logs
 logs
