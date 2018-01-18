@@ -1,0 +1,47 @@
+const Path = require('path');
+const Webpack = require('webpack')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
+module.exports = {
+    entry: './src/index.tsx',
+    output: {
+        filename: '[hash].bundle.js',
+        path: Path.resolve(__dirname, 'dist')
+    },
+    devtool: 'source-map',
+    resolve: {
+        extensions: ['.ts', '.tsx', '.js']
+    },
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                loader: 'awesome-typescript-loader'
+            },
+            {
+                enforce: 'pre',
+                test: /\.js$/,
+                loader: 'source-map-loader'
+            }
+        ]
+    },
+    externals: {
+        'react': 'React',
+        'react-dom': 'ReactDOM'
+    },
+    plugins: [
+        new Webpack.HotModuleReplacementPlugin(),
+        new HtmlWebpackPlugin({
+            template: Path.resolve(__dirname, 'index.html')
+        })
+    ],
+    devServer: {
+        contentBase: Path.resolve(__dirname, 'dist'),
+        inline: true,
+        hot: true,
+        historyApiFallback: true,
+        proxy: {
+            '/api': 'http://localhost:8000'
+        }
+    }
+}
