@@ -14,13 +14,38 @@ export class FileSelector extends React.Component<FileSelectorProps, FileSelecto
     file_input: HTMLInputElement
     constructor(props: FileSelectorProps) {
         super(props)
+        this.handleDragFile = this.handleDragFile.bind(this)
+        this.handleDropFile = this.handleDropFile.bind(this)
         this.state = {
             filelist: []
         }
     }
+    componentDidMount() {
+        let e_app = document.getElementById('app')
+        e_app.addEventListener('dragover', this.handleDragFile)
+        e_app.addEventListener('drop', this.handleDropFile)
+    }
+    componentWillUnmount() {
+        let e_app = document.getElementById('app')
+        e_app.removeEventListener('dragover', this.handleDragFile)
+        e_app.removeEventListener('drop', this.handleDropFile)
+    }
     handleSelect = () => {
         let filelist = []
         let files = this.file_input.files
+        for (let i = 0; i < files.length; i++) {
+            filelist.push(files[i])
+        }
+        this.setState({filelist})
+    }
+    handleDragFile(evt: DragEvent) {
+        evt.preventDefault()
+        evt.dataTransfer.dropEffect = 'copy'
+    }
+    handleDropFile(evt: DragEvent) {
+        evt.preventDefault()
+        let filelist = []
+        let files = evt.dataTransfer.files
         for (let i = 0; i < files.length; i++) {
             filelist.push(files[i])
         }
@@ -39,7 +64,7 @@ export class FileSelector extends React.Component<FileSelectorProps, FileSelecto
             } else {
                 size_text = `${size}B`
             }
-            return (<div className="input-group mb-2">
+            return (<div className="input-group mt-2">
                 <div className="input-group-prepend">
                     <span className="input-group-text">File</span>
                 </div>
@@ -50,7 +75,6 @@ export class FileSelector extends React.Component<FileSelectorProps, FileSelecto
             </div>)
         })
         return (<div className="col-md-8 col-lg-6">
-            {x_filelist}
             {this.state.filelist.length == 0 ? (
                 <div className="form-inline">
                     <button className="btn btn-primary" onClick={() => this.file_input.click()}>Select files</button>
@@ -63,6 +87,7 @@ export class FileSelector extends React.Component<FileSelectorProps, FileSelecto
                     <button className="btn ml-2" onClick={() => this.setState({filelist: []})}>Cancel</button>
                 </div>
             )}
+            {x_filelist}
         </div>)
     }
 }

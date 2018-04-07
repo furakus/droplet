@@ -46,7 +46,7 @@ export class App extends React.Component<AppProps, AppState> {
         } else if (this.state.stage == Stage.Compressing) {
             x_stage = (<FileCompressor compiler="TypeScript" framework='React' filelist={this.filelist} onDone={this.handleCompressed} onCancel={() => this.setState({stage: Stage.Selecting})} />)
         } else if (this.state.stage == Stage.Uploading) {
-
+            x_stage = (<div>aaaa</div>)
         }
         return (<div className="container">
             <nav className="navbar navbar-expand-lg navbar-light bg-light  mb-4">
