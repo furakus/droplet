@@ -1,8 +1,10 @@
 const Path = require('path');
 const Webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = {
+    mode: 'production',
     entry: './src/index.tsx',
     output: {
         filename: '[hash].bundle.js',
@@ -33,6 +35,9 @@ module.exports = {
         new Webpack.HotModuleReplacementPlugin(),
         new HtmlWebpackPlugin({
             template: Path.resolve(__dirname, 'index.html')
+        }),
+        new UglifyJsPlugin({
+            'sourceMap': true
         })
     ],
     devServer: {

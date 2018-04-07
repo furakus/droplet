@@ -44,7 +44,7 @@ export class FileCompressor extends React.Component<FileCompressorProps, FileCom
     render() {
         return (<div className="col-md-8 col-lg-6">
             <div className="progress mb-2">
-                <div className="progress-bar" style={{width: `${this.state.progress}%`}} role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                <div className="progress-bar" style={{width: `${this.state.progress}%`}} role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={100}></div>
             </div>
             <button className="btn" onClick={this.onCancel}>Cancel</button>
         </div>)
