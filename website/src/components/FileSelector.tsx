@@ -11,38 +11,45 @@ interface FileSelectorStates {
 }
 
 export class FileSelector extends React.Component<FileSelectorProps, FileSelectorStates> {
-    file_input: HTMLInputElement
+    file_input: HTMLInputElement | null
     constructor(props: FileSelectorProps) {
         super(props)
-        this.handleDragFile = this.handleDragFile.bind(this)
-        this.handleDropFile = this.handleDropFile.bind(this)
         this.state = {
             filelist: []
         }
     }
     componentDidMount() {
-        let e_app = document.getElementById('app')
+        let e_app = document
         e_app.addEventListener('dragover', this.handleDragFile)
         e_app.addEventListener('drop', this.handleDropFile)
     }
     componentWillUnmount() {
-        let e_app = document.getElementById('app')
+        let e_app = document
         e_app.removeEventListener('dragover', this.handleDragFile)
         e_app.removeEventListener('drop', this.handleDropFile)
     }
-    handleSelect = () => {
-        let filelist = []
-        let files = this.file_input.files
-        for (let i = 0; i < files.length; i++) {
-            filelist.push(files[i])
+    handleDialog = () => {
+        if (this.file_input !== null) {
+            this.file_input.click()
         }
-        this.setState({filelist})
     }
-    handleDragFile(evt: DragEvent) {
+    handleSelect = () => {
+        if (this.file_input !== null) {
+            let files = this.file_input.files
+            if (files !== null) {
+                let filelist = []
+                for (let i = 0; i < files.length; i++) {
+                    filelist.push(files[i])
+                }
+                this.setState({filelist})
+            }
+        }
+    }
+    handleDragFile = (evt: DragEvent) => {
         evt.preventDefault()
         evt.dataTransfer.dropEffect = 'copy'
     }
-    handleDropFile(evt: DragEvent) {
+    handleDropFile = (evt: DragEvent) => {
         evt.preventDefault()
         let filelist = []
         let files = evt.dataTransfer.files
@@ -77,7 +84,7 @@ export class FileSelector extends React.Component<FileSelectorProps, FileSelecto
         return (<div className="col-md-8 col-lg-6">
             {this.state.filelist.length == 0 ? (
                 <div className="form-inline">
-                    <button className="btn btn-primary" onClick={() => this.file_input.click()}>Select files</button>
+                    <button className="btn btn-primary" onClick={this.handleDialog}>Select files</button>
                     <span className="ml-2">or drag and drop them to upload</span>
                     <input type="file" hidden multiple ref={(input) => this.file_input = input} onChange = {this.handleSelect} />
                 </div>

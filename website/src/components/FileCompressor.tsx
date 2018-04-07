@@ -14,14 +14,14 @@ interface FileCompressorState {
 }
 
 export class FileCompressor extends React.Component<FileCompressorProps, FileCompressorState> {
-    cancel_callback: () => void
+    cancel_callback: (() => void) | null = null
     constructor(props: FileCompressorProps) {
         super(props)
         this.state = {
             progress: 0
         }
     }
-    componentWillMount() {
+    componentDidMount() {
         let zipfile = new JSZip()
         for (let file of this.props.filelist) {
             zipfile.file(file.name, file)
@@ -32,10 +32,16 @@ export class FileCompressor extends React.Component<FileCompressorProps, FileCom
         }).then(this.props.onDone).catch(() => {})
     }
     componentWillUnmount() {
-        this.cancel_callback()
+        if (this.cancel_callback !== null) {
+            this.cancel_callback()
+            this.cancel_callback = null
+        }
     }
     onCancel = () => {
-        this.cancel_callback()
+        if (this.cancel_callback !== null) {
+            this.cancel_callback()
+            this.cancel_callback = null
+        }
         this.props.onCancel()
     }
     onProgress = (metadata: {percent: number, currentFile: string}) => {
