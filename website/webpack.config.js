@@ -33,11 +33,14 @@ module.exports = {
     },
     plugins: [
         new Webpack.HotModuleReplacementPlugin(),
+        new Webpack.DefinePlugin({
+            'SHORT_URL': '"http://localhost:8000"'
+        }),
         new HtmlWebpackPlugin({
             template: Path.resolve(__dirname, 'index.html')
         }),
         new UglifyJsPlugin({
-            'sourceMap': true
+            sourceMap: true
         })
     ],
     devServer: {

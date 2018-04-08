@@ -26,7 +26,7 @@ export class App extends React.Component<AppProps, AppState> {
         this.state = {
             stage: Stage.Selecting
         }
-    } 
+    }
     handleSelect = (filelist: File[]) => {
         this.filelist = filelist
         if (this.filelist.length == 1) {
@@ -59,7 +59,7 @@ export class App extends React.Component<AppProps, AppState> {
             x_stage = (<Uploader compiler="TypeScript" framework="React" metadata={this.upload_metadata} onDone={this.handleReset} onCancel={this.handleReset}/>)
         }
         return (<div className="container">
-            <nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">
+            <nav className="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
                 <a className="navbar-brand" href="#">Droplet</a>
             </nav>
             <div className="row justify-content-center">{x_stage}</div>

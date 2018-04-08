@@ -57,7 +57,7 @@ export class FileCompressor extends React.Component<FileCompressorProps, FileCom
             <div className="alert alert-warning mb-2">
                 Packing the files...
             </div>
-            <div className="progress mb-2">
+            <div className="progress mb-4">
                 <div className="progress-bar" style={{width: `${this.state.progress}%`}} role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={100}></div>
             </div>
             <button className="btn" onClick={this.onCancel}>Cancel</button>

@@ -2,6 +2,8 @@ import * as React from 'react'
 import Axios, { CancelTokenSource } from 'axios'
 import { CreateRequest, CreateResponse } from '../../../backend/inc/interface'
 
+declare var SHORT_URL: string
+
 export interface UploadMetadata {
     name: string
     blob: Blob
@@ -76,7 +78,7 @@ export class Uploader extends React.Component<UploaderProps, UploaderStates> {
     }
     private async upload(metadata: UploadMetadata) {
         let flow = await this.createFlow(metadata.blob.size)
-        let link = `https://localhost/${flow.id}/${metadata.name}`
+        let link = `${SHORT_URL}/${flow.id}/${metadata.name}`
         this.setState({ stage: Stage.Transfer, link })
         let storage_url = `${flow.flow_storage}/flow/${flow.flow_id}/push?token=${flow.flow_token}`
         await this.uploadFlow(storage_url, metadata.blob)
@@ -136,13 +138,13 @@ export class Uploader extends React.Component<UploaderProps, UploaderStates> {
         }
         return (<div className="col-md-8 col-lg-6">
             {x_msg}
-            <div className="input-group mb-2">
+            <div className="input-group mb-4">
                 <div className="input-group-prepend">
                     <button className="btn btn-secondary" onClick={this.handleCopy}>Copy Link</button>
                 </div>
                 <input className="form-control" type="text" readOnly value={this.state.link} ref={(input) => {this.link_input = input}} />
             </div>
-            <div className="progress mb-2">
+            <div className="progress mb-4">
                 <div className="progress-bar" style={{width: `${this.state.progress}%`}} role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={100}></div>
             </div>
             {this.state.stage === Stage.Done ? (

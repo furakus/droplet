@@ -58,6 +58,12 @@ export class FileSelector extends React.Component<FileSelectorProps, FileSelecto
         }
         this.setState({filelist})
     }
+    handleCancel = () => {
+        if (this.file_input !== null) {
+            this.file_input.value = ''
+        }
+        this.setState({filelist: []})
+    }
     render() {
          let x_filelist = this.state.filelist.map((file) => {
             let size = file.size
@@ -82,17 +88,28 @@ export class FileSelector extends React.Component<FileSelectorProps, FileSelecto
             </div>)
         })
         return (<div className="col-md-8 col-lg-6">
+            {this.state.filelist.length == 0 ? (
+                <div className="alert alert-warning mb-2">
+                    <p>Droplet works like a network pipe. Each link only offers <strong>one-time</strong> downloading. <a className="alert-link" href="https://github.com/furakus/droplet/blob/master/README.md">Learn more</a></p>
+                    <hr/>
+                    <p className="mb-0">Remember: You only have OneShot</p>
+                </div>
+            ) : (
+                <div className="alert alert-warning mb-2">
+                    Multiple files can be uploaded at once. Droplet will pack them.
+                </div>
+            )}
             {x_filelist}
             {this.state.filelist.length == 0 ? (
-                <div className="form-inline">
+                <div className="form-inline mt-4">
                     <button className="btn btn-primary" onClick={this.handleDialog}>Select files</button>
                     <span className="ml-2">or drag and drop them to upload</span>
                 </div>
             ) : (
-                <div>
+                <div className="mt-4">
                     <button className="btn btn-primary" onClick={() => this.props.onSelect(this.state.filelist)}>Upload</button>
                     <button className="btn btn-warning ml-2" onClick={this.handleDialog}>Change</button>
-                    <button className="btn ml-2" onClick={() => this.setState({filelist: []})}>Cancel</button>
+                    <button className="btn ml-2" onClick={this.handleCancel}>Cancel</button>
                 </div>
             )}
             <input type="file" hidden multiple ref={(input) => this.file_input = input} onChange = {this.handleSelect} />
