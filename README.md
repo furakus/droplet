@@ -4,10 +4,10 @@ Droplet allows you to transfer files over network.
 It works like a pipe and only buffers a little data during transfer. The one-time sharing link will be destroyed immediately when the transfer is done.
 
 ## Public Service
-### Via Web
+### Via Browser
 https://droplet.exchange
 
-### Via commandline
+### Via Commandline
 You can also upload by cURL
 ```sh
 curl -LT ${your file path} https://d.ika.cx/${unique id}/${file name}
