@@ -1,5 +1,4 @@
-server
-public
+website/dist
 
 # Logs
 logs
@@ -59,5 +58,3 @@ typings/
 
 # dotenv environment variables file
 .env
-
-package-lock.json
