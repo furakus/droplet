@@ -1,4 +1,5 @@
 website/dist
+backend/dist
 
 # Logs
 logs
