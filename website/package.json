@@ -2,23 +2,24 @@
   "name": "droplet-website",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "build": "webpack -p --progress",
     "dev": "webpack-dev-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "PZ Read",
   "license": "MIT",
   "dependencies": {
-    "@types/react": "^16.0.34",
-    "@types/react-dom": "^16.0.3",
+    "npm": "^5.8.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0"
   },
   "devDependencies": {
     "@types/jszip": "^3.1.3",
+    "@types/react": "^16.0.34",
+    "@types/react-dom": "^16.0.3",
     "awesome-typescript-loader": "^5.0.0",
+    "axios": "^0.18.0",
     "html-webpack-plugin": "^3.2.0",
     "jszip": "^3.1.5",
     "source-map-loader": "^0.2.3",

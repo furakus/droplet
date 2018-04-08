@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { FileSelector } from './FileSelector'
 import { FileCompressor } from './FileCompressor'
-import { Uploader } from './Uploader'
+import { FileMetadata, Uploader } from './Uploader'
 
 export interface AppProps {
     compiler: string
@@ -20,7 +20,7 @@ interface AppState {
 
 export class App extends React.Component<AppProps, AppState> {
     filelist: File[]
-    file: { name: string, blob: Blob }
+    file: FileMetadata
     constructor(props: AppProps) {
         super(props)
         this.state = {
@@ -46,14 +46,17 @@ export class App extends React.Component<AppProps, AppState> {
         }
         this.setState({ stage: Stage.Uploading })
     }
+    handleReset = () => {
+        this.setState({stage: Stage.Selecting})
+    }
     render() {
         let x_stage: JSX.Element | null = null
         if (this.state.stage == Stage.Selecting) {
-            x_stage = (<FileSelector compiler="TypeScript" framework='React' onSelect={this.handleSelect} />)
+            x_stage = (<FileSelector compiler="TypeScript" framework="React" onSelect={this.handleSelect} />)
         } else if (this.state.stage == Stage.Compressing) {
-            x_stage = (<FileCompressor compiler="TypeScript" framework='React' filelist={this.filelist} onDone={this.handleCompressed} onCancel={() => this.setState({stage: Stage.Selecting})} />)
+            x_stage = (<FileCompressor compiler="TypeScript" framework="React" filelist={this.filelist} onDone={this.handleCompressed} onCancel={this.handleReset} />)
         } else if (this.state.stage == Stage.Uploading) {
-            x_stage = (<div>aaaa</div>)
+            x_stage = (<Uploader compiler="TypeScript" framework="React" file={this.file} onDone={this.handleReset} onCancel={this.handleReset}/>)
         }
         return (<div className="container">
             <nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">

@@ -29,7 +29,10 @@ export class FileCompressor extends React.Component<FileCompressorProps, FileCom
         new Promise<Blob>((resolve, reject) => {
             this.cancel_callback = reject
             zipfile.generateAsync({type: 'blob'}, this.onProgress).then(resolve)
-        }).then(this.props.onDone).catch(() => {})
+        }).then((blob) => {
+            this.cancel_callback = null
+            this.props.onDone(blob)
+        }).catch(() => {})
     }
     componentWillUnmount() {
         if (this.cancel_callback !== null) {

@@ -1,22 +1,23 @@
-import Cluster from 'cluster'
-import Http from 'http'
-import Express from 'express'
-import Morgan from 'morgan'
-import BodyParser from 'body-parser'
-import Url from 'url'
-import Redis from 'redis'
-import Dotenv from 'dotenv'
-import Useragent from 'express-useragent'
+import * as Cluster from 'cluster'
+import * as Http from 'http'
+import * as Express from 'express'
+import * as Morgan from 'morgan'
+import * as BodyParser from 'body-parser'
+import * as Url from 'url'
+import * as Redis from 'redis'
+import * as Dotenv from 'dotenv'
+import * as Useragent from 'express-useragent'
 import Axios from 'axios'
-import PathToRegexp from 'path-to-regexp'
-import BlueBird from 'bluebird'
-import { ErrorMessage } from '../interface'
+import * as PathToRegexp from 'path-to-regexp'
+import { promisify } from 'util'
+import { ErrorMessage, CreateRequest, CreateResponse } from '../inc/interface'
+import IdGenerator from './idgen'
 
 Dotenv.config()
 
 const ID_FORMAT = '\\w{4,}'
-const REGEX_ROUTE_UPLOAD = `/api/id/:id(${ID_FORMAT})/upload`
-const REGEX_ROUTE_POLLEVENT = `/api/id/:id(${ID_FORMAT})/poll`
+const REGEX_ROUTE_CREATE = `/api/create`
+// const REGEX_ROUTE_POLLEVENT = `/api/id/:id(${ID_FORMAT})/poll`
 const REGEX_ROUTE_DIRECT_DOWNLOAD = `/:id(${ID_FORMAT})/:filename?`
 const REGEX_ROUTE_DIRECT_UPLOAD = PathToRegexp(`/:id(${ID_FORMAT})/:filename?`)
 const REGEX_BOT_WHITELIST = new RegExp('(curl|wget)')
@@ -56,7 +57,7 @@ function load_config(): Config {
     }
 }
 
-interface AsyncRedisClient extends Redis.RedisClient {
+interface AsyncRedisClient {
     hsetnxAsync(...args: any[]): Promise<number>
     hgetAsync(...args: any[]): Promise<string>
     hmsetAsync(...args: any[]): Promise<string>
@@ -69,7 +70,19 @@ interface AsyncRedisClient extends Redis.RedisClient {
 }
 
 const config = load_config()
-const db = BlueBird.promisifyAll(Redis.createClient(config.db_port, config.db_host)) as AsyncRedisClient
+const idgen = new IdGenerator()
+const client = Redis.createClient(config.db_port, config.db_host)
+const db: AsyncRedisClient = {
+    hsetnxAsync: promisify(client.hsetnx).bind(client),
+    hgetAsync: promisify(client.hget).bind(client),
+    hmsetAsync: promisify(client.hmset).bind(client),
+    hmgetAsync: promisify(client.hmget).bind(client),
+    expireAsync: promisify(client.expire).bind(client),
+    renameAsync: promisify(client.rename).bind(client),
+    delAsync: promisify(client.del).bind(client),
+    publishAsync: promisify(client.publish).bind(client),
+    subscribeAsync: promisify(client.subscribe).bind(client)
+}
 const app = Express()
 app.use(Morgan('combined'))
 app.use(BodyParser.json())
@@ -196,26 +209,41 @@ async function route_direct_upload(req: Http.IncomingMessage, res: Http.ServerRe
     return true
 }
 
-app.post(REGEX_ROUTE_UPLOAD, async (req: any, res: any) => {
-    let id: string = req.params['id']
-    let upload_param: UploadBody = req.body
-    if (upload_param.size === undefined) {
+app.post(REGEX_ROUTE_CREATE, async (req: any, res: any) => {
+    let create_param: CreateRequest = req.body
+    if (create_param.file_size === undefined) {
         res.status(400).json({ msg: ErrorMessage.INVALID_PARAM })
         return
     }
-    let session = await create_session(id, upload_param.size)
+    let id: string = ''
+    let session: Session | [number, ErrorMessage] = [500, ErrorMessage.INTERNAL]
+    for (let len = 6; len <= 8; len++) {
+        id = await idgen.gen(len)
+        session = await create_session(id, create_param.file_size)
+        if (session instanceof Session) {
+            break
+        } else {
+            let [code, message] = session
+            if (message !== ErrorMessage.DUPLICATED_ID) {
+                break
+            }
+        }
+    }
     if (!(session instanceof Session)) {
         let [code, message] = session
         res.status(code).json({ msg: message })
         return
     }
-    res.json({
-        storage_server: session.storage_server,
+    let data: CreateResponse = {
+        id,
+        flow_storage: session.storage_server,
         flow_id: session.flow_id,
         flow_token: session.flow_token,
-    })
+    }
+    res.json(data)
 })
 
+/*
 app.post(REGEX_ROUTE_POLLEVENT, async (req: any, res: any) => {
     let id: string = req.params['id']
     let poll_param: PollBody = req.body
@@ -247,6 +275,7 @@ app.post(REGEX_ROUTE_POLLEVENT, async (req: any, res: any) => {
         sub_db.quit()
     }
 })
+*/
 
 app.get(REGEX_ROUTE_DIRECT_DOWNLOAD, async (req:any, res: any) => {
     let ua = req.useragent
