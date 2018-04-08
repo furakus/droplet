@@ -10,7 +10,7 @@ export interface CreateResponse {
     flow_token: string
 }
 
-export enum ErrorMessage { 
+export enum ErrorMessage {
     INVALID_PARAM = 'Invalid Parameter',
     INVALID_ID = 'Invalid ID',
     DUPLICATED_ID = 'Duplicated ID',

@@ -28,7 +28,9 @@ export class FileCompressor extends React.Component<FileCompressorProps, FileCom
         }
         new Promise<Blob>((resolve, reject) => {
             this.cancel_callback = reject
-            zipfile.generateAsync({type: 'blob'}, this.onProgress).then(resolve)
+            zipfile.generateAsync({type: 'blob'}, this.onProgress).then(resolve).catch(() => {
+                // TODO
+            })
         }).then((blob) => {
             this.cancel_callback = null
             this.props.onDone(blob)
@@ -52,6 +54,9 @@ export class FileCompressor extends React.Component<FileCompressorProps, FileCom
     }
     render() {
         return (<div className="col-md-8 col-lg-6">
+            <div className="alert alert-warning mb-2">
+                Packing the files...
+            </div>
             <div className="progress mb-2">
                 <div className="progress-bar" style={{width: `${this.state.progress}%`}} role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={100}></div>
             </div>
