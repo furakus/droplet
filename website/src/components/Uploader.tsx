@@ -125,7 +125,7 @@ export class Uploader extends React.Component<UploaderProps, UploaderStates> {
             x_msg = (<div className="alert alert-warning mb-2">Initializing...</div>)
             break
         case Stage.Transfer:
-            x_msg = (<div className="alert alert-warning mb-2">Uploading...</div>)
+            x_msg = (<div className="alert alert-warning mb-2">Transfering... The file can be downloaded now.</div>)
             break
         case Stage.Done:
             x_msg = (<div className="alert alert-success mb-2">Done.</div>)
