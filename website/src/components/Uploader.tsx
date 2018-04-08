@@ -29,6 +29,7 @@ interface UploaderStates {
 }
 
 export class Uploader extends React.Component<UploaderProps, UploaderStates> {
+    link_input: HTMLInputElement | null = null
     cancel_callback: ((reason: string) => void) | null = null
     cancel_tokens: Set<CancelTokenSource> = new Set()
     constructor(props: UploaderProps) {
@@ -106,6 +107,13 @@ export class Uploader extends React.Component<UploaderProps, UploaderStates> {
     componentWillUnmount() {
         this.cancel()
     }
+    handleCopy = () => {
+        if (this.link_input !== null) {
+            this.link_input.focus()
+            this.link_input.setSelectionRange(0, this.link_input.value.length)
+            document.execCommand('copy')
+        }
+    }
     handleCancel = () => {
         this.cancel()
         this.props.onCancel()
@@ -130,9 +138,9 @@ export class Uploader extends React.Component<UploaderProps, UploaderStates> {
             {x_msg}
             <div className="input-group mb-2">
                 <div className="input-group-prepend">
-                    <button className="btn btn-secondary">Copy Link</button>
+                    <button className="btn btn-secondary" onClick={this.handleCopy}>Copy Link</button>
                 </div>
-                <input className="form-control" type="text" readOnly value={this.state.link} />
+                <input className="form-control" type="text" readOnly value={this.state.link} ref={(input) => {this.link_input = input}} />
             </div>
             <div className="progress mb-2">
                 <div className="progress-bar" style={{width: `${this.state.progress}%`}} role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={100}></div>
