@@ -1,3 +1,3 @@
 FROM node:alpine
 WORKDIR /droplet
-CMD ["npm", "start"]
+CMD ["./run.sh"]

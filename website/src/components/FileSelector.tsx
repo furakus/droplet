@@ -103,7 +103,7 @@ export class FileSelector extends React.Component<FileSelectorProps, FileSelecto
             {this.state.filelist.length == 0 ? (
                 <div className="form-inline mt-4">
                     <button className="btn btn-primary" onClick={this.handleDialog}>Select files</button>
-                    <span className="ml-2">or drag and drop them to upload</span>
+                    <span className="ml-2">or drag them to upload</span>
                 </div>
             ) : (
                 <div className="mt-4">
