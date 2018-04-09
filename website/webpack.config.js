@@ -29,7 +29,8 @@ module.exports = {
     },
     externals: {
         'react': 'React',
-        'react-dom': 'ReactDOM'
+        'react-dom': 'ReactDOM',
+        'jszip': 'JSZip'
     },
     plugins: [
         new Webpack.HotModuleReplacementPlugin(),
