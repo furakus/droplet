@@ -47,10 +47,15 @@ export class FileSelector extends React.Component<FileSelectorProps, FileSelecto
     }
     handleDragFile = (evt: DragEvent) => {
         evt.preventDefault()
-        evt.dataTransfer.dropEffect = 'copy'
+        if (evt.dataTransfer !== null) {
+            evt.dataTransfer.dropEffect = 'copy'
+        }
     }
     handleDropFile = (evt: DragEvent) => {
         evt.preventDefault()
+        if (evt.dataTransfer === null) {
+            return
+        }
         let filelist = []
         let files = evt.dataTransfer.files
         for (let i = 0; i < files.length; i++) {
